@@ -1,0 +1,24 @@
+{
+  "model_name": "status_model_logistic_2024",
+  "metrics": {
+    "model_type": "logistic_regression",
+    "weighted": true,
+    "accuracy": 0.981081081081081,
+    "auc": 0.5901611530090194,
+    "n_train": 20718,
+    "n_test": 5180,
+    "class_balance_train": 0.018920745245680087,
+    "class_balance_test": 0.01891891891891892,
+    "cv_auc_mean": 0.5695577568978292,
+    "cv_auc_std": 0.08592719265611627
+  },
+  "numeric_features": [
+    "age"
+  ],
+  "categorical_features": [
+    "female",
+    "married",
+    "employed",
+    "in_labor_force"
+  ]
+}

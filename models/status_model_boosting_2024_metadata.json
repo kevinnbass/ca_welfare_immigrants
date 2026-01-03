@@ -1,0 +1,22 @@
+{
+  "model_name": "status_model_boosting_2024",
+  "metrics": {
+    "model_type": "gradient_boosting",
+    "weighted": true,
+    "accuracy": 0.9814671814671815,
+    "auc": 0.932136431904521,
+    "n_train": 20718,
+    "n_test": 5180,
+    "cv_auc_mean": 0.5066142891347674,
+    "cv_auc_std": 0.04882871838924862
+  },
+  "numeric_features": [
+    "age"
+  ],
+  "categorical_features": [
+    "female",
+    "married",
+    "employed",
+    "in_labor_force"
+  ]
+}

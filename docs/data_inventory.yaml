@@ -1,0 +1,162 @@
+datasets:
+  acs_pums:
+    name: American Community Survey Public Use Microdata Sample
+    provider: U.S. Census Bureau
+    url: https://www2.census.gov/programs-surveys/acs/data/pums/
+    documentation: https://www.census.gov/programs-surveys/acs/microdata/documentation.html
+    years_used:
+    - 2024
+    - 2023
+    - 2022
+    - 2021
+    - 2020
+    - 2019
+    files:
+      person:
+        pattern: csv_p{state}.zip
+        description: Person-level records
+      housing:
+        pattern: csv_h{state}.zip
+        description: Housing/household records
+    state: California (code 06, abbr ca)
+    access: Direct download (no registration required)
+    license: Public domain
+    variables_used:
+      demographics:
+      - AGEP (age)
+      - SEX (sex)
+      - RAC1P (race)
+      - HISP (hispanic origin)
+      nativity_citizenship:
+      - NATIVITY (native vs foreign born)
+      - CIT (citizenship status)
+      - POBP (place of birth)
+      - YOEP (year of entry)
+      socioeconomic:
+      - SCHL (education)
+      - ESR (employment status)
+      - INDP (industry)
+      - OCCP (occupation)
+      - POVPIP (poverty ratio)
+      welfare_benefits:
+      - HINS4 (Medicaid coverage)
+      - FS (SNAP receipt)
+      - SSIP (SSI income)
+      - PAP (public assistance income)
+      weights:
+      - PWGTP (person weight)
+      - WGTP (household weight)
+      - PWGTP1-PWGTP80 (person replicate weights)
+      - WGTP1-WGTP80 (household replicate weights)
+  sipp:
+    name: Survey of Income and Program Participation
+    provider: U.S. Census Bureau
+    url: https://www2.census.gov/programs-surveys/sipp/data/datasets/
+    documentation: https://www.census.gov/programs-surveys/sipp/data/datasets.html
+    years_used:
+    - 2024
+    - 2023
+    - 2022
+    access: Direct download (no registration required)
+    license: Public domain
+    purpose: Train legal status imputation model
+    key_variables:
+    - citizenship status
+    - immigration status at entry
+    - LPR status (if available)
+    - year became LPR
+    notes: 'SIPP contains more detailed immigration status information than ACS.
+
+      Used to build a model predicting P(unauthorized | covariates).
+
+      CRITICAL: Pipeline stops if legal status variables unavailable.
+
+      '
+  pew_unauthorized:
+    name: Pew Research Center Unauthorized Immigrant Estimates
+    provider: Pew Research Center
+    url: https://www.pewresearch.org/race-and-ethnicity/
+    files:
+      state_trends:
+        url: https://www.pewresearch.org/wp-content/uploads/sites/20/2025/08/RE_2025.08.21_Unauthorized-immigrants_detailed-tables_state-trends.xlsx
+        description: State-level unauthorized immigrant population trends
+      labor_force:
+        url: https://www.pewresearch.org/wp-content/uploads/sites/20/2025/08/RE_2025.08.21_Unauthorized-immigrants_detailed-tables_labor-force-by-state.xlsx
+        description: Unauthorized immigrant labor force by state
+    years_covered: 1990-2023
+    access: Direct download (may require manual if URLs change)
+    license: Pew Research Center terms of use
+    purpose: Calibration targets for imputation
+    california_values:
+      unauthorized_2023: ~2,200,000
+      unauthorized_labor_force_2023: ~1,500,000
+  mpi_profile:
+    name: Migration Policy Institute State Unauthorized Population Profile
+    provider: Migration Policy Institute
+    url: https://www.migrationpolicy.org/data/unauthorized-immigrant-population/state/CA
+    access: Web scraping or manual extraction
+    license: MPI terms of use
+    purpose: Secondary calibration benchmark
+  chis:
+    name: California Health Interview Survey
+    provider: UCLA Center for Health Policy Research
+    url: https://healthpolicy.ucla.edu/our-work/public-use-files
+    years_available: 2001-2024
+    access: Requires free registration
+    files:
+      adult_puf: Adult Public Use File
+      codebook: Variable documentation
+    purpose: Cross-validation of CA-specific estimates
+    variables_of_interest:
+    - citizenship/immigration status (verify availability)
+    - Medi-Cal coverage
+    - CalFresh/SNAP receipt
+    notes: 'CHIS may have more detailed immigration status variables than ACS.
+
+      Requires manual download after account creation.
+
+      See docs/manual_download.md for instructions.
+
+      '
+download_log:
+- dataset: acs_pums_2023_person
+  download_date: '2026-01-02T21:57:34.141500'
+  file_path: C:\Users\kbass\ca_welfare_immigrants\data\raw\acs_2023_1year_ca\psam_p06.csv
+  file_size: 277561235
+- dataset: acs_pums_2023_housing
+  download_date: '2026-01-02T21:57:34.141500'
+  file_path: C:\Users\kbass\ca_welfare_immigrants\data\raw\acs_2023_1year_ca\psam_h06.csv
+  file_size: 100309342
+- dataset: sipp_2024
+  download_date: '2026-01-02T21:57:34.141500'
+  file_path: C:\Users\kbass\ca_welfare_immigrants\data\raw\sipp_2024
+- dataset: sipp_2023
+  download_date: '2026-01-02T21:57:34.141500'
+  file_path: C:\Users\kbass\ca_welfare_immigrants\data\raw\sipp_2023
+- dataset: sipp_2022
+  download_date: '2026-01-02T21:57:34.141500'
+  file_path: C:\Users\kbass\ca_welfare_immigrants\data\raw\sipp_2022
+- dataset: pew_state_trends
+  download_date: '2026-01-02T21:57:34.141500'
+  file_path: C:\Users\kbass\ca_welfare_immigrants\data\external\pew_state_trends.xlsx
+  file_size: 26343
+- dataset: pew_labor_force
+  download_date: '2026-01-02T21:57:34.141500'
+  file_path: C:\Users\kbass\ca_welfare_immigrants\data\external\pew_labor_force_by_state.xlsx
+  file_size: 15500
+notes:
+  underreporting: 'Survey-based benefit measures typically underreport actual program
+    receipt.
+
+    ACS SNAP receipt is estimated to capture ~60-70% of administrative totals.
+
+    Medicaid coverage may be better reported but still understated.
+
+    '
+  privacy: 'All datasets are public use files with disclosure protection applied.
+
+    Do not attempt to identify individuals.
+
+    Suppress cells with unweighted n < 30.
+
+    '
