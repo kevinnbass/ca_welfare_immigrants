@@ -67,13 +67,44 @@ jobs:
         run: |
           pytest tests/ --collect-only 2>&1 | head -50
 
-      - name: Run single test
-        run: |
-          pytest tests/unit/test_config.py::TestValidateYear::test_valid_year_in_range -v --tb=long
+      - name: Test config
+        run: pytest tests/unit/test_config.py -v --tb=short
 
-      - name: Run all tests
-        run: |
-          pytest tests/ -v --tb=long -m "not slow"
+      - name: Test weights
+        run: pytest tests/unit/test_weights.py -v --tb=short
+
+      - name: Test imputation
+        run: pytest tests/unit/test_imputation.py -v --tb=short
+
+      - name: Test validation
+        run: pytest tests/unit/test_validation.py -v --tb=short
+
+      - name: Test download
+        run: pytest tests/unit/test_download.py -v --tb=short
+
+      - name: Test benchmarks
+        run: pytest tests/unit/test_benchmarks.py -v --tb=short
+
+      - name: Test bootstrap
+        run: pytest tests/unit/test_bootstrap.py -v --tb=short
+
+      - name: Test diagnostics
+        run: pytest tests/unit/test_diagnostics.py -v --tb=short
+
+      - name: Test analysis_units
+        run: pytest tests/unit/test_analysis_units.py -v --tb=short
+
+      - name: Test data_sources
+        run: pytest tests/unit/test_data_sources.py -v --tb=short
+
+      - name: Test pooled_analysis
+        run: pytest tests/unit/test_pooled_analysis.py -v --tb=short
+
+      - name: Test integration mini_pipeline
+        run: pytest tests/integration/test_mini_pipeline.py -v --tb=short
+
+      - name: Test integration snap_estimands
+        run: pytest tests/integration/test_snap_estimands.py -v --tb=short
 
       - name: Run tests with coverage
         if: matrix.python-version == '3.11'
