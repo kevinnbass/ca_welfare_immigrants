@@ -54,6 +54,19 @@ jobs:
           pip list
           python -c "import pytest_mock; print('pytest-mock OK')"
 
+      - name: Test imports
+        run: |
+          python -c "import tests.conftest; print('conftest OK')"
+          python -c "import tests.unit.test_download; print('test_download OK')"
+          python -c "import tests.unit.test_weights; print('test_weights OK')"
+          python -c "import tests.unit.test_imputation; print('test_imputation OK')"
+          python -c "from src import config; print('src.config OK')"
+          python -c "from src.utils import download; print('src.utils.download OK')"
+
+      - name: Run pytest collection
+        run: |
+          pytest tests/ --collect-only 2>&1 | head -50
+
       - name: Run tests
         run: |
           pytest tests/ -v --tb=long -m "not slow"
