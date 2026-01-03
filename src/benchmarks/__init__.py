@@ -8,7 +8,7 @@ from official sources for validation and calibration:
 - Unauthorized immigrant population benchmarks (Pew, MPI, CMS, DHS)
 """
 
-from .dof_population import DOFPopulationFetcher, get_ca_population, PopulationEstimate
+from .dof_population import DOFPopulationFetcher, PopulationEstimate, get_ca_population
 from .unauthorized import UnauthorizedBenchmarkFetcher, UnauthorizedEstimate
 
 __all__ = [

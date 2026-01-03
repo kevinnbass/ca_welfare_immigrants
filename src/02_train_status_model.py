@@ -26,19 +26,17 @@ from typing import Optional
 import joblib
 import numpy as np
 import pandas as pd
-from sklearn.calibration import calibration_curve
+from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
     accuracy_score,
     classification_report,
-    confusion_matrix,
     roc_auc_score,
 )
 from sklearn.model_selection import cross_val_score, train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
-from sklearn.compose import ColumnTransformer
 
 from . import config
 
@@ -139,8 +137,8 @@ class SIPPStatusDeriver:
 
         # Determine if we can derive status
         # Minimum requirement: citizenship + (lpr_status OR entry_status)
-        result.can_derive_status = (
-            result.has_citizenship and (result.has_lpr_status or result.has_status_at_entry)
+        result.can_derive_status = result.has_citizenship and (
+            result.has_lpr_status or result.has_status_at_entry
         )
 
         if result.can_derive_status:
@@ -219,7 +217,9 @@ class SIPPStatusDeriver:
             entry = df[check.entry_status_var]
             legal_entry_mask = noncitizen_mask & (entry.isin([1, 2, 3]))
             status[legal_entry_mask] = "NON_LPR_LEGAL"
-            logger.debug(f"Classified {legal_entry_mask.sum()} noncitizens as legal via entry status")
+            logger.debug(
+                f"Classified {legal_entry_mask.sum()} noncitizens as legal via entry status"
+            )
 
         # Remaining noncitizens without legal status indicators
         still_unknown = noncitizen_mask & (status == "UNKNOWN")
@@ -274,13 +274,23 @@ def load_sipp_data(file_path: Path, year: int = 2024) -> pd.DataFrame:
     # Only load required columns to avoid memory issues with large SIPP files
     required_cols = [
         # Status variables
-        "ECITIZEN", "AIMSTAT", "TIMSTAT", "TYRLPR",
+        "ECITIZEN",
+        "AIMSTAT",
+        "TIMSTAT",
+        "TYRLPR",
         # Demographics
-        "TAGE", "PRTAGE", "ESEX", "EEDUC", "EEDUCATE", "EMS",
+        "TAGE",
+        "PRTAGE",
+        "ESEX",
+        "EEDUC",
+        "EEDUCATE",
+        "EMS",
         # Employment
         "RMESR",
         # Race/ethnicity
-        "ERACE", "EHISPAN", "EORIGIN",
+        "ERACE",
+        "EHISPAN",
+        "EORIGIN",
         # Nativity
         "EBORNUS",
         # Health/welfare
@@ -293,21 +303,21 @@ def load_sipp_data(file_path: Path, year: int = 2024) -> pd.DataFrame:
 
     if suffix == ".csv":
         # Try to detect delimiter by reading first line
-        with open(file_path, 'r') as f:
+        with open(file_path, "r") as f:
             first_line = f.readline()
 
         # SIPP files often use pipe delimiter
-        if '|' in first_line and first_line.count('|') > first_line.count(','):
-            delimiter = '|'
+        if "|" in first_line and first_line.count("|") > first_line.count(","):
+            delimiter = "|"
             logger.info("Detected pipe-delimited CSV")
         else:
-            delimiter = ','
+            delimiter = ","
 
         # Get available columns
-        if delimiter == '|':
-            available_cols = first_line.strip().split('|')
+        if delimiter == "|":
+            available_cols = first_line.strip().split("|")
         else:
-            available_cols = first_line.strip().split(',')
+            available_cols = first_line.strip().split(",")
 
         # Filter to only columns that exist
         cols_to_load = [c for c in required_cols if c in available_cols]
@@ -329,6 +339,7 @@ def load_sipp_data(file_path: Path, year: int = 2024) -> pd.DataFrame:
     elif suffix == ".sas7bdat":
         try:
             import pyreadstat
+
             df, meta = pyreadstat.read_sas7bdat(file_path)
         except ImportError:
             logger.error("pyreadstat not installed. Install with: pip install pyreadstat")
@@ -512,7 +523,9 @@ def train_logistic_regression(
 
     # Build preprocessing pipeline
     numeric_transformer = StandardScaler()
-    categorical_transformer = OneHotEncoder(drop="first", sparse_output=False, handle_unknown="ignore")
+    categorical_transformer = OneHotEncoder(
+        drop="first", sparse_output=False, handle_unknown="ignore"
+    )
 
     preprocessor = ColumnTransformer(
         transformers=[
@@ -522,10 +535,12 @@ def train_logistic_regression(
     )
 
     # Build full pipeline
-    pipeline = Pipeline([
-        ("preprocessor", preprocessor),
-        ("classifier", LogisticRegression(**config.LOGISTIC_REG_PARAMS)),
-    ])
+    pipeline = Pipeline(
+        [
+            ("preprocessor", preprocessor),
+            ("classifier", LogisticRegression(**config.LOGISTIC_REG_PARAMS)),
+        ]
+    )
 
     # Split data (with weights if provided)
     if sample_weights is not None:
@@ -536,7 +551,7 @@ def train_logistic_regression(
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.2, random_state=config.RANDOM_SEED, stratify=y
         )
-        w_train, w_test = None, None
+        w_train, _ = None, None  # w_test unused
 
     # Fit model (with sample weights if provided)
     if w_train is not None:
@@ -565,7 +580,9 @@ def train_logistic_regression(
     metrics["cv_auc_std"] = cv_scores.std()
 
     logger.info(f"Logistic Regression - Test AUC: {metrics['auc']:.3f}")
-    logger.info(f"Cross-validation AUC: {metrics['cv_auc_mean']:.3f} (+/- {metrics['cv_auc_std']:.3f})")
+    logger.info(
+        f"Cross-validation AUC: {metrics['cv_auc_mean']:.3f} (+/- {metrics['cv_auc_std']:.3f})"
+    )
 
     # Classification report
     logger.info("\nClassification Report:")
@@ -599,7 +616,9 @@ def train_gradient_boosting(
 
     # Build preprocessing pipeline
     numeric_transformer = StandardScaler()
-    categorical_transformer = OneHotEncoder(drop="first", sparse_output=False, handle_unknown="ignore")
+    categorical_transformer = OneHotEncoder(
+        drop="first", sparse_output=False, handle_unknown="ignore"
+    )
 
     preprocessor = ColumnTransformer(
         transformers=[
@@ -609,13 +628,18 @@ def train_gradient_boosting(
     )
 
     # Build full pipeline
-    pipeline = Pipeline([
-        ("preprocessor", preprocessor),
-        ("classifier", GradientBoostingClassifier(
-            **config.GRADIENT_BOOST_PARAMS,
-            random_state=config.RANDOM_SEED,
-        )),
-    ])
+    pipeline = Pipeline(
+        [
+            ("preprocessor", preprocessor),
+            (
+                "classifier",
+                GradientBoostingClassifier(
+                    **config.GRADIENT_BOOST_PARAMS,
+                    random_state=config.RANDOM_SEED,
+                ),
+            ),
+        ]
+    )
 
     # Split data (with weights if provided)
     if sample_weights is not None:
@@ -626,7 +650,7 @@ def train_gradient_boosting(
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.2, random_state=config.RANDOM_SEED, stratify=y
         )
-        w_train, w_test = None, None
+        w_train, _ = None, None  # w_test unused
 
     # Fit model (with sample weights if provided)
     if w_train is not None:
@@ -653,7 +677,9 @@ def train_gradient_boosting(
     metrics["cv_auc_std"] = cv_scores.std()
 
     logger.info(f"Gradient Boosting - Test AUC: {metrics['auc']:.3f}")
-    logger.info(f"Cross-validation AUC: {metrics['cv_auc_mean']:.3f} (+/- {metrics['cv_auc_std']:.3f})")
+    logger.info(
+        f"Cross-validation AUC: {metrics['cv_auc_mean']:.3f} (+/- {metrics['cv_auc_std']:.3f})"
+    )
 
     return pipeline, metrics
 
@@ -762,7 +788,9 @@ def main():
         logger.error("")
         logger.error("Options:")
         logger.error("1. Run 'python -m src.00_fetch_data' to download SIPP data")
-        logger.error("2. Manually download SIPP from Census Bureau and place in data/raw/sipp_YEAR/")
+        logger.error(
+            "2. Manually download SIPP from Census Bureau and place in data/raw/sipp_YEAR/"
+        )
         logger.error("3. Review docs/manual_download.md for instructions")
         logger.error("")
         logger.error("PIPELINE STOPPED.")
@@ -838,7 +866,9 @@ def main():
 
         # Check AUC threshold
         if lr_metrics["auc"] < config.MIN_MODEL_AUC:
-            logger.warning(f"Logistic regression AUC ({lr_metrics['auc']:.3f}) below threshold ({config.MIN_MODEL_AUC})")
+            logger.warning(
+                f"Logistic regression AUC ({lr_metrics['auc']:.3f}) below threshold ({config.MIN_MODEL_AUC})"
+            )
 
     if args.model in ["boosting", "both"]:
         gb_pipeline, gb_metrics = train_gradient_boosting(

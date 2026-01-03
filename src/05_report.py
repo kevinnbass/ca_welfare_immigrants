@@ -15,6 +15,7 @@ import logging
 import sys
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -22,7 +23,6 @@ import pandas as pd
 import seaborn as sns
 
 from . import config
-from typing import Optional
 
 # Configure logging
 logging.basicConfig(
@@ -89,10 +89,15 @@ def create_bar_chart(
 
     for i, group in enumerate(group_order):
         values = pivot[group].values * 100  # Convert to percentage
-        bars = ax.bar(x + i * width, values, width, label=labels.get(group, group), color=colors.get(group))
+        ax.bar(
+            x + i * width, values, width, label=labels.get(group, group), color=colors.get(group)
+        )
 
         # Add error bars if available
-        errors = df_plot[df_plot["group"] == group].set_index("program").loc[program_order, "se"].values * 100
+        errors = (
+            df_plot[df_plot["group"] == group].set_index("program").loc[program_order, "se"].values
+            * 100
+        )
         if not np.all(np.isnan(errors)):
             ax.errorbar(
                 x + i * width,
@@ -440,7 +445,9 @@ and validate imputation results.
         # Find corresponding ACS estimate
         acs_match = acs_estimates[acs_estimates["program"] == program]
         if not acs_match.empty:
-            acs_total = acs_match["weighted_n"].sum() if "weighted_n" in acs_match.columns else "N/A"
+            acs_total = (
+                acs_match["weighted_n"].sum() if "weighted_n" in acs_match.columns else "N/A"
+            )
             if isinstance(acs_total, (int, float)):
                 ratio = acs_total / admin_count if admin_count > 0 else np.nan
                 ratio_str = f"{ratio:.2f}" if pd.notna(ratio) else "N/A"
@@ -499,10 +506,7 @@ def generate_variance_decomposition_section(
         Markdown string for the variance decomposition section
     """
     # Check if variance components are available
-    has_var_components = all(
-        col in results.columns
-        for col in ["se", "within_var", "between_var"]
-    )
+    has_var_components = all(col in results.columns for col in ["se", "within_var", "between_var"])
 
     if not has_var_components and bootstrap_results is None:
         return """
@@ -536,7 +540,7 @@ sources to total variance:
                 model_pct = (model_var / total_var * 100) if model_var else 0
 
                 rows.append(
-                    f"| {program} | {group} | {row.get('se', 0)*100:.2f}pp | "
+                    f"| {program} | {group} | {row.get('se', 0) * 100:.2f}pp | "
                     f"{survey_pct:.1f}% | {mi_pct:.1f}% | {model_pct:.1f}% |"
                 )
 
@@ -545,9 +549,9 @@ sources to total variance:
         for key, result in bootstrap_results.items():
             if hasattr(result, "fraction_survey"):
                 rows.append(
-                    f"| {key} | Bootstrap | {result.se_total*100:.2f}pp | "
-                    f"{result.fraction_survey*100:.1f}% | {result.fraction_mi*100:.1f}% | "
-                    f"{result.fraction_model*100:.1f}% |"
+                    f"| {key} | Bootstrap | {result.se_total * 100:.2f}pp | "
+                    f"{result.fraction_survey * 100:.1f}% | {result.fraction_mi * 100:.1f}% | "
+                    f"{result.fraction_model * 100:.1f}% |"
                 )
 
     if not rows:

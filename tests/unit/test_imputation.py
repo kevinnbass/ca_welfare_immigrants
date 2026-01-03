@@ -5,11 +5,11 @@ import pandas as pd
 import pytest
 
 from src.utils.imputation import (
-    create_bernoulli_imputations,
-    combine_mi_results_rubins_rules,
+    MIResult,
     calibrate_to_total,
     calibrate_to_total_by_raking,
-    MIResult,
+    combine_mi_results_rubins_rules,
+    create_bernoulli_imputations,
 )
 
 
@@ -179,17 +179,14 @@ class TestCalibrateToTotal:
     @pytest.fixture
     def sample_df(self):
         """Create sample DataFrame for calibration tests."""
-        return pd.DataFrame({
-            "indicator": [1, 1, 0, 0, 1],
-            "weight": [100.0, 150.0, 200.0, 100.0, 50.0]
-        })
+        return pd.DataFrame(
+            {"indicator": [1, 1, 0, 0, 1], "weight": [100.0, 150.0, 200.0, 100.0, 50.0]}
+        )
 
     def test_successful_calibration(self, sample_df):
         """Test successful weight calibration."""
         # Current total: 100 + 150 + 50 = 300
-        result = calibrate_to_total(
-            sample_df, "indicator", "weight", target_total=600.0
-        )
+        result = calibrate_to_total(sample_df, "indicator", "weight", target_total=600.0)
         # Should have calibrated weight column
         assert "weight_calibrated" in result.columns
         # New total should be ~600
@@ -208,10 +205,7 @@ class TestCalibrateToTotal:
 
     def test_zero_current_total_raises(self):
         """Test that zero current total raises ValueError."""
-        df = pd.DataFrame({
-            "indicator": [0, 0, 0],
-            "weight": [100.0, 100.0, 100.0]
-        })
+        df = pd.DataFrame({"indicator": [0, 0, 0], "weight": [100.0, 100.0, 100.0]})
         with pytest.raises(ValueError, match="current_total is effectively zero"):
             calibrate_to_total(df, "indicator", "weight", target_total=100.0)
 
@@ -234,16 +228,13 @@ class TestCalibrateByRaking:
     @pytest.fixture
     def sample_df(self):
         """Create sample DataFrame for raking tests."""
-        return pd.DataFrame({
-            "indicator": [1, 1, 0, 0, 1],
-            "weight": [100.0, 150.0, 200.0, 100.0, 50.0]
-        })
+        return pd.DataFrame(
+            {"indicator": [1, 1, 0, 0, 1], "weight": [100.0, 150.0, 200.0, 100.0, 50.0]}
+        )
 
     def test_successful_raking_convergence(self, sample_df):
         """Test successful raking convergence."""
-        result = calibrate_to_total_by_raking(
-            sample_df, "indicator", "weight", target_total=450.0
-        )
+        result = calibrate_to_total_by_raking(sample_df, "indicator", "weight", target_total=450.0)
         assert "weight_calibrated" in result.columns
         new_total = (result["indicator"] * result["weight_calibrated"]).sum()
         assert new_total == pytest.approx(450.0, rel=0.01)
@@ -251,9 +242,7 @@ class TestCalibrateByRaking:
     def test_negative_target_raises(self, sample_df):
         """Test that negative target raises ValueError."""
         with pytest.raises(ValueError, match="target_total must be positive"):
-            calibrate_to_total_by_raking(
-                sample_df, "indicator", "weight", target_total=-100.0
-            )
+            calibrate_to_total_by_raking(sample_df, "indicator", "weight", target_total=-100.0)
 
     def test_zero_max_iterations_raises(self, sample_df):
         """Test that zero max_iterations raises ValueError."""
@@ -272,14 +261,13 @@ class TestCalibrateByRaking:
     def test_non_convergence_raises(self):
         """Test that non-convergence raises ValueError."""
         # Create a case that won't converge in 1 iteration with tight tolerance
-        df = pd.DataFrame({
-            "indicator": [1, 1, 0],
-            "weight": [100.0, 100.0, 100.0]
-        })
+        df = pd.DataFrame({"indicator": [1, 1, 0], "weight": [100.0, 100.0, 100.0]})
         with pytest.raises(ValueError, match="failed to converge"):
             calibrate_to_total_by_raking(
-                df, "indicator", "weight",
+                df,
+                "indicator",
+                "weight",
                 target_total=1000.0,  # Needs ratio of 5
                 max_iterations=1,
-                tolerance=0.0001
+                tolerance=0.0001,
             )

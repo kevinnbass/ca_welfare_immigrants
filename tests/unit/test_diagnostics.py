@@ -12,6 +12,7 @@ class TestCalibrationCurve:
     def test_compute_weighted_calibration_curve_import(self):
         """Test calibration curve function can be imported."""
         from src.utils.diagnostics import compute_weighted_calibration_curve
+
         assert compute_weighted_calibration_curve is not None
 
     def test_calibration_curve_bins(self):
@@ -58,6 +59,7 @@ class TestCalibrationMetrics:
     def test_compute_calibration_metrics_import(self):
         """Test metrics function can be imported."""
         from src.utils.diagnostics import compute_calibration_metrics
+
         assert compute_calibration_metrics is not None
 
     def test_ece_computation(self):
@@ -75,7 +77,7 @@ class TestCalibrationMetrics:
         y_prob_bad = np.clip(y_true * 0.9 + (1 - y_true) * 0.1, 0, 1)
 
         metrics_good = compute_calibration_metrics(y_true, y_prob_good)
-        metrics_bad = compute_calibration_metrics(y_true, y_prob_bad)
+        _ = compute_calibration_metrics(y_true, y_prob_bad)  # metrics_bad for coverage
 
         assert "ece" in metrics_good
         assert "mce" in metrics_good
@@ -107,12 +109,14 @@ class TestSubgroupMetrics:
     def test_compute_subgroup_metrics_import(self):
         """Test subgroup metrics function can be imported."""
         from src.utils.diagnostics import compute_subgroup_metrics
+
         assert compute_subgroup_metrics is not None
 
     def test_subgroup_metrics_by_region(self):
         """Test computing metrics by subgroup."""
-        from src.utils.diagnostics import compute_subgroup_metrics
         import pandas as pd
+
+        from src.utils.diagnostics import compute_subgroup_metrics
 
         np.random.seed(42)
         n = 500
@@ -134,18 +138,21 @@ class TestCalibrationPlotting:
     def test_plot_calibration_curve_import(self):
         """Test plotting function can be imported."""
         from src.utils.diagnostics import plot_calibration_curve
+
         assert plot_calibration_curve is not None
 
     def test_generate_calibration_report_import(self):
         """Test report generation function can be imported."""
         from src.utils.diagnostics import generate_calibration_report
+
         assert generate_calibration_report is not None
 
     def test_generate_calibration_report(self):
         """Test calibration report generation."""
-        from src.utils.diagnostics import generate_calibration_report
         import tempfile
         from pathlib import Path
+
+        from src.utils.diagnostics import generate_calibration_report
 
         np.random.seed(42)
         n = 200

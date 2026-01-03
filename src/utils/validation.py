@@ -9,8 +9,6 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
-from . import weights
-
 logger = logging.getLogger(__name__)
 
 
@@ -306,9 +304,7 @@ class DataValidator:
         self.results = []
 
         # 1. Check population total
-        expected_pop = (
-            self.CA_POPULATION_2023 if self.year <= 2023 else self.CA_POPULATION_2024
-        )
+        expected_pop = self.CA_POPULATION_2023 if self.year <= 2023 else self.CA_POPULATION_2024
         self.add_result(
             validate_population_total(
                 df, weight_col, expected_pop, tolerance=0.10, name="CA Population Total"
@@ -323,9 +319,7 @@ class DataValidator:
 
         # 3. Check nativity distribution
         if "NATIVITY" in df.columns:
-            # Foreign-born should be ~27%
-            expected = {"2": self.EXPECTED_FOREIGN_BORN_PCT}  # 2 = foreign born
-            # Note: Need to handle numeric vs string coding
+            # Foreign-born should be ~27% (NATIVITY=2 = foreign born)
             self.add_result(
                 ValidationResult(
                     name="Foreign-born proportion",

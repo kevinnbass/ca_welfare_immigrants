@@ -14,7 +14,6 @@ Usage:
 import argparse
 import logging
 import sys
-from pathlib import Path
 
 import pandas as pd
 
@@ -71,12 +70,8 @@ def create_comparison_table(
         "food_stamps": "snap",
     }
 
-    # Map CHIS groups to comparable ACS groups
-    group_mapping = {
-        "US_BORN": "US_BORN",
-        "NATURALIZED": None,  # Part of LEGAL_IMMIGRANT in ACS
-        "NONCITIZEN": None,  # Mixed legal/illegal in ACS
-    }
+    # Map CHIS groups to comparable ACS groups (for reference)
+    # US_BORN -> US_BORN, NATURALIZED -> part of LEGAL_IMMIGRANT, NONCITIZEN -> mixed
 
     comparisons = []
 
@@ -94,22 +89,18 @@ def create_comparison_table(
 
         # Find comparable ACS estimate
         if chis_group == "US_BORN":
-            acs_match = acs_df[
-                (acs_df["program"] == acs_program) &
-                (acs_df["group"] == "US_BORN")
-            ]
+            acs_match = acs_df[(acs_df["program"] == acs_program) & (acs_df["group"] == "US_BORN")]
         elif chis_group == "NATURALIZED":
             # Naturalized is part of LEGAL_IMMIGRANT in ACS
             acs_match = acs_df[
-                (acs_df["program"] == acs_program) &
-                (acs_df["group"] == "LEGAL_IMMIGRANT")
+                (acs_df["program"] == acs_program) & (acs_df["group"] == "LEGAL_IMMIGRANT")
             ]
         elif chis_group == "NONCITIZEN":
             # Non-citizens in CHIS = legal + illegal in ACS
             # Get both for reference
             acs_match = acs_df[
-                (acs_df["program"] == acs_program) &
-                (acs_df["group"].isin(["LEGAL_IMMIGRANT", "ILLEGAL"]))
+                (acs_df["program"] == acs_program)
+                & (acs_df["group"].isin(["LEGAL_IMMIGRANT", "ILLEGAL"]))
             ]
         else:
             continue
@@ -130,7 +121,9 @@ def create_comparison_table(
         elif len(acs_match) > 1:
             # For NONCITIZEN, show range
             comparison["acs_group"] = "LEGAL+ILLEGAL"
-            comparison["acs_estimate"] = f"{acs_match['estimate'].min():.3f}-{acs_match['estimate'].max():.3f}"
+            comparison["acs_estimate"] = (
+                f"{acs_match['estimate'].min():.3f}-{acs_match['estimate'].max():.3f}"
+            )
             comparison["acs_se"] = None
             comparison["difference"] = None
 
@@ -151,10 +144,7 @@ def print_validation_summary(
     print("\n### CHIS 2023 Estimates by Citizenship Status ###\n")
 
     for program in chis_df["program"].unique():
-        prog_df = chis_df[
-            (chis_df["program"] == program) &
-            (chis_df["group"] != "ALL")
-        ]
+        prog_df = chis_df[(chis_df["program"] == program) & (chis_df["group"] != "ALL")]
         program_label = {
             "medicaid": "Medi-Cal",
             "food_stamps": "Food Stamps/CalFresh",
@@ -166,29 +156,35 @@ def print_validation_summary(
             se_pct = row["se"] * 100
             ci_low = row["ci_lower"] * 100
             ci_high = row["ci_upper"] * 100
-            print(f"  {row['group']:15} {est_pct:5.1f}% (SE: {se_pct:.1f}%, 95% CI: {ci_low:.1f}-{ci_high:.1f}%, n={row['n_unweighted']:,})")
+            print(
+                f"  {row['group']:15} {est_pct:5.1f}% (SE: {se_pct:.1f}%, 95% CI: {ci_low:.1f}-{ci_high:.1f}%, n={row['n_unweighted']:,})"
+            )
         print()
 
     print("\n### Comparison to ACS Estimates ###\n")
-    print(f"{'Program':<15} {'CHIS Group':<15} {'CHIS':<10} {'ACS Group':<18} {'ACS':<12} {'Diff':<8}")
+    print(
+        f"{'Program':<15} {'CHIS Group':<15} {'CHIS':<10} {'ACS Group':<18} {'ACS':<12} {'Diff':<8}"
+    )
     print("-" * 78)
 
     for _, row in comparison_df.iterrows():
-        chis_est = f"{row['chis_estimate']*100:.1f}%"
+        chis_est = f"{row['chis_estimate'] * 100:.1f}%"
         if isinstance(row.get("acs_estimate"), str):
             acs_est = row["acs_estimate"]
             diff = "N/A"
         elif pd.notna(row.get("acs_estimate")):
-            acs_est = f"{row['acs_estimate']*100:.1f}%"
+            acs_est = f"{row['acs_estimate'] * 100:.1f}%"
             if pd.notna(row.get("difference")):
-                diff = f"{row['difference']*100:+.1f}pp"
+                diff = f"{row['difference'] * 100:+.1f}pp"
             else:
                 diff = "N/A"
         else:
             acs_est = "N/A"
             diff = "N/A"
 
-        print(f"{row['program']:<15} {row['chis_group']:<15} {chis_est:<10} {row.get('acs_group', 'N/A'):<18} {acs_est:<12} {diff:<8}")
+        print(
+            f"{row['program']:<15} {row['chis_group']:<15} {chis_est:<10} {row.get('acs_group', 'N/A'):<18} {acs_est:<12} {diff:<8}"
+        )
 
     print("\n### Key Notes ###")
     print("- CHIS NONCITIZEN includes both legal and illegal immigrants (cannot distinguish)")
@@ -222,7 +218,9 @@ def main():
         loader.load(args.year)
     except FileNotFoundError as e:
         logger.error(f"CHIS data not found: {e}")
-        logger.error("Download CHIS Adult PUF from https://healthpolicy.ucla.edu/our-work/public-use-files")
+        logger.error(
+            "Download CHIS Adult PUF from https://healthpolicy.ucla.edu/our-work/public-use-files"
+        )
         return 1
 
     # Compute CHIS rates

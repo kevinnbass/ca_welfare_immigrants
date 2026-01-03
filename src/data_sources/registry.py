@@ -7,7 +7,10 @@ with consistent error handling and reporting.
 
 import logging
 from pathlib import Path
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 from .base import BaseDataSourceDownloader, DownloadOutcome, DownloadResult
 from .calfresh import CalFreshDownloader
@@ -160,7 +163,6 @@ class AdminDataSourceRegistry:
         Returns:
             Dict of source_name -> cleaned DataFrame
         """
-        import pandas as pd
 
         cleaned = {}
 

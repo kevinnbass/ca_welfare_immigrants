@@ -235,30 +235,36 @@ def update_data_inventory(
     # Add ACS downloads
     for year, files in acs_files.items():
         for file_type, path in files.items():
-            inventory["download_log"].append({
-                "dataset": f"acs_pums_{year}_{file_type}",
-                "download_date": timestamp,
-                "file_path": str(path),
-                "file_size": path.stat().st_size if path.exists() else 0,
-            })
+            inventory["download_log"].append(
+                {
+                    "dataset": f"acs_pums_{year}_{file_type}",
+                    "download_date": timestamp,
+                    "file_path": str(path),
+                    "file_size": path.stat().st_size if path.exists() else 0,
+                }
+            )
 
     # Add SIPP downloads
     for year, path in sipp_files.items():
-        inventory["download_log"].append({
-            "dataset": f"sipp_{year}",
-            "download_date": timestamp,
-            "file_path": str(path),
-        })
+        inventory["download_log"].append(
+            {
+                "dataset": f"sipp_{year}",
+                "download_date": timestamp,
+                "file_path": str(path),
+            }
+        )
 
     # Add Pew downloads
     for file_type, path in pew_files.items():
         if path:
-            inventory["download_log"].append({
-                "dataset": f"pew_{file_type}",
-                "download_date": timestamp,
-                "file_path": str(path),
-                "file_size": path.stat().st_size if path.exists() else 0,
-            })
+            inventory["download_log"].append(
+                {
+                    "dataset": f"pew_{file_type}",
+                    "download_date": timestamp,
+                    "file_path": str(path),
+                    "file_size": path.stat().st_size if path.exists() else 0,
+                }
+            )
 
     # Write updated inventory
     with open(inventory_path, "w") as f:

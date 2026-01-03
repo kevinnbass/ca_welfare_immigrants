@@ -296,10 +296,7 @@ def get_ca_population(year: int, use_fallback: bool = True) -> int:
                     population = int(
                         FALLBACK_POPULATION[lower_year]
                         + ratio
-                        * (
-                            FALLBACK_POPULATION[upper_year]
-                            - FALLBACK_POPULATION[lower_year]
-                        )
+                        * (FALLBACK_POPULATION[upper_year] - FALLBACK_POPULATION[lower_year])
                     )
         else:
             raise ValueError(f"No population estimate available for {year}")

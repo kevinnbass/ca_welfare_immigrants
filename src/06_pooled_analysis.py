@@ -22,12 +22,12 @@ import numpy as np
 import pandas as pd
 
 from . import config
-from .utils.analysis_units import get_estimand_spec, compute_rate_for_estimand
+from .utils.analysis_units import compute_rate_for_estimand, get_estimand_spec
 from .utils.imputation import combine_mi_results_rubins_rules
 from .utils.weights import (
-    weighted_proportion,
     coefficient_of_variation,
     confidence_interval,
+    weighted_proportion,
 )
 
 # Configure logging
@@ -164,8 +164,7 @@ def construct_pooled_weights(
     # Household weights
     hh_weight_cols = [config.ACS_HH_WEIGHT]
     hh_weight_cols += [
-        f"{config.ACS_REP_WEIGHT_PREFIX_HH}{i}"
-        for i in range(1, config.N_REPLICATE_WEIGHTS + 1)
+        f"{config.ACS_REP_WEIGHT_PREFIX_HH}{i}" for i in range(1, config.N_REPLICATE_WEIGHTS + 1)
     ]
 
     for col in hh_weight_cols:
@@ -224,19 +223,21 @@ def estimate_pooled_rates(
                         ci_low, ci_high = np.nan, np.nan
                         cv = np.nan
 
-                    results.append({
-                        "group": status_value,
-                        "program": program,
-                        "estimate": rate,
-                        "se": se,
-                        "ci_lower": ci_low,
-                        "ci_upper": ci_high,
-                        "cv": cv,
-                        "n_unweighted": n_unweighted,
-                        "n_weighted": n_weighted,
-                        "unit": estimand.unit,
-                        "estimand_id": estimand.estimand_id,
-                    })
+                    results.append(
+                        {
+                            "group": status_value,
+                            "program": program,
+                            "estimate": rate,
+                            "se": se,
+                            "ci_lower": ci_low,
+                            "ci_upper": ci_high,
+                            "cv": cv,
+                            "n_unweighted": n_unweighted,
+                            "n_weighted": n_weighted,
+                            "unit": estimand.unit,
+                            "estimand_id": estimand.estimand_id,
+                        }
+                    )
                     continue
 
                 except Exception as e:
@@ -281,19 +282,21 @@ def estimate_pooled_rates(
                 ci_low, ci_high = np.nan, np.nan
                 cv = np.nan
 
-            results.append({
-                "group": status_value,
-                "program": program,
-                "estimate": rate,
-                "se": se,
-                "ci_lower": ci_low,
-                "ci_upper": ci_high,
-                "cv": cv,
-                "n_unweighted": n_unweighted,
-                "n_weighted": n_weighted,
-                "unit": "person",
-                "estimand_id": program,
-            })
+            results.append(
+                {
+                    "group": status_value,
+                    "program": program,
+                    "estimate": rate,
+                    "se": se,
+                    "ci_lower": ci_low,
+                    "ci_upper": ci_high,
+                    "cv": cv,
+                    "n_unweighted": n_unweighted,
+                    "n_weighted": n_weighted,
+                    "unit": "person",
+                    "estimand_id": program,
+                }
+            )
 
     return pd.DataFrame(results)
 
@@ -323,9 +326,7 @@ def estimate_pooled_rates_with_mi(
             logger.warning(f"Missing imputation {i}")
             break
 
-        imp_results = estimate_pooled_rates(
-            df, programs, status_col=status_col
-        )
+        imp_results = estimate_pooled_rates(df, programs, status_col=status_col)
         imp_results["imputation"] = i
         all_imp_results.append(imp_results)
 
@@ -347,9 +348,7 @@ def estimate_pooled_rates_with_mi(
             total_var = between_var * (1 + 1 / len(estimates))
             se = np.sqrt(total_var)
         else:
-            mi_result = combine_mi_results_rubins_rules(
-                list(estimates), list(variances)
-            )
+            mi_result = combine_mi_results_rubins_rules(list(estimates), list(variances))
             mean_est = mi_result.estimate
             se = mi_result.se
 
@@ -360,19 +359,21 @@ def estimate_pooled_rates_with_mi(
             ci_low, ci_high = np.nan, np.nan
             cv = np.nan
 
-        combined.append({
-            "group": group,
-            "program": program,
-            "estimate": mean_est,
-            "se": se,
-            "ci_lower": ci_low,
-            "ci_upper": ci_high,
-            "cv": cv,
-            "n_unweighted": gdf["n_unweighted"].mean(),
-            "n_weighted": gdf["n_weighted"].mean(),
-            "unit": gdf["unit"].iloc[0],
-            "estimand_id": gdf["estimand_id"].iloc[0],
-        })
+        combined.append(
+            {
+                "group": group,
+                "program": program,
+                "estimate": mean_est,
+                "se": se,
+                "ci_lower": ci_low,
+                "ci_upper": ci_high,
+                "cv": cv,
+                "n_unweighted": gdf["n_unweighted"].mean(),
+                "n_weighted": gdf["n_weighted"].mean(),
+                "unit": gdf["unit"].iloc[0],
+                "estimand_id": gdf["estimand_id"].iloc[0],
+            }
+        )
 
     return pd.DataFrame(combined)
 
@@ -466,9 +467,7 @@ Data source: American Community Survey Public Use Microdata Sample (ACS PUMS).
 
 def main():
     """Main entry point for pooled analysis."""
-    parser = argparse.ArgumentParser(
-        description="Pooled-year ACS analysis for welfare rates"
-    )
+    parser = argparse.ArgumentParser(description="Pooled-year ACS analysis for welfare rates")
     parser.add_argument(
         "--years",
         nargs="+",
@@ -503,11 +502,13 @@ def main():
     programs = ["medicaid", "snap", "ssi", "public_assistance", "any_benefit"]
 
     if args.include_household:
-        programs.extend([
-            "snap_household_householder",
-            "snap_household_highest_risk",
-            "snap_person",
-        ])
+        programs.extend(
+            [
+                "snap_household_householder",
+                "snap_household_highest_risk",
+                "snap_person",
+            ]
+        )
 
     # Load and harmonize data
     try:
@@ -561,9 +562,7 @@ def main():
             if pd.isna(est):
                 logger.info(f"  {row['group']:20s}: N/A")
             else:
-                logger.info(
-                    f"  {row['group']:20s}: {est:5.1f}% ({ci_low:5.1f}% - {ci_high:5.1f}%)"
-                )
+                logger.info(f"  {row['group']:20s}: {est:5.1f}% ({ci_low:5.1f}% - {ci_high:5.1f}%)")
 
     logger.info(f"\nResults saved to: {output_dir}")
     logger.info("\nPooled analysis complete!")

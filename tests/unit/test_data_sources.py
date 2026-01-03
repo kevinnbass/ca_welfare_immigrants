@@ -81,6 +81,7 @@ class TestBaseDataSourceDownloader:
     def test_sha256_computation(self):
         """Test SHA256 hash computation."""
         with tempfile.TemporaryDirectory() as tmpdir:
+
             class TestDownloader(BaseDataSourceDownloader):
                 def get_download_url(self, **kwargs):
                     return "https://example.com"
@@ -107,6 +108,7 @@ class TestBaseDataSourceDownloader:
     def test_content_type_validation_valid(self):
         """Test content type validation with valid type."""
         with tempfile.TemporaryDirectory() as tmpdir:
+
             class TestDownloader(BaseDataSourceDownloader):
                 def get_download_url(self, **kwargs):
                     return "https://example.com"
@@ -131,6 +133,7 @@ class TestBaseDataSourceDownloader:
     def test_content_type_validation_invalid(self):
         """Test content type validation with invalid type."""
         with tempfile.TemporaryDirectory() as tmpdir:
+
             class TestDownloader(BaseDataSourceDownloader):
                 def get_download_url(self, **kwargs):
                     return "https://example.com"
@@ -246,6 +249,7 @@ class TestRegistryIntegration:
     def test_registry_import(self):
         """Test registry can be imported."""
         from src.data_sources.registry import AdminDataSourceRegistry
+
         assert AdminDataSourceRegistry is not None
 
     @patch("src.data_sources.base.requests.get")

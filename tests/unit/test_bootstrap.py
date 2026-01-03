@@ -3,7 +3,6 @@ Tests for bootstrap model uncertainty infrastructure.
 """
 
 import numpy as np
-import pytest
 
 
 class TestBootstrapMIResult:
@@ -12,6 +11,7 @@ class TestBootstrapMIResult:
     def test_import(self):
         """Test bootstrap module can be imported."""
         from src.utils.bootstrap import BootstrapMIResult
+
         assert BootstrapMIResult is not None
 
     def test_result_creation(self):
@@ -70,19 +70,23 @@ class TestBootstrapSampling:
     def test_bootstrap_sipp_sample_import(self):
         """Test bootstrap_sipp_sample can be imported."""
         from src.utils.bootstrap import bootstrap_sipp_sample
+
         assert bootstrap_sipp_sample is not None
 
     def test_bootstrap_sample_maintains_size(self):
         """Test bootstrap sample maintains dataset size."""
-        from src.utils.bootstrap import bootstrap_sipp_sample
         import pandas as pd
 
+        from src.utils.bootstrap import bootstrap_sipp_sample
+
         # Create test data
-        df = pd.DataFrame({
-            "id": range(100),
-            "weight": np.random.uniform(0.5, 2.0, 100),
-            "feature": np.random.randn(100),
-        })
+        df = pd.DataFrame(
+            {
+                "id": range(100),
+                "weight": np.random.uniform(0.5, 2.0, 100),
+                "feature": np.random.randn(100),
+            }
+        )
 
         # Bootstrap sample
         boot_df = bootstrap_sipp_sample(df, weight_col="weight", random_state=42)
@@ -92,13 +96,16 @@ class TestBootstrapSampling:
 
     def test_bootstrap_sample_is_different(self):
         """Test bootstrap samples are different from original."""
-        from src.utils.bootstrap import bootstrap_sipp_sample
         import pandas as pd
 
-        df = pd.DataFrame({
-            "id": range(100),
-            "weight": np.random.uniform(0.5, 2.0, 100),
-        })
+        from src.utils.bootstrap import bootstrap_sipp_sample
+
+        df = pd.DataFrame(
+            {
+                "id": range(100),
+                "weight": np.random.uniform(0.5, 2.0, 100),
+            }
+        )
 
         boot_df = bootstrap_sipp_sample(df, weight_col="weight", random_state=42)
 
@@ -112,6 +119,7 @@ class TestVarianceDecomposition:
     def test_combine_bootstrap_mi_results_import(self):
         """Test combine function can be imported."""
         from src.utils.bootstrap import combine_bootstrap_mi_results
+
         assert combine_bootstrap_mi_results is not None
 
     def test_variance_decomposition_sums_correctly(self):
@@ -169,6 +177,7 @@ class TestBootstrapModelTrainer:
     def test_trainer_import(self):
         """Test BootstrapModelTrainer can be imported."""
         from src.utils.bootstrap import BootstrapModelTrainer
+
         assert BootstrapModelTrainer is not None
 
     def test_trainer_creation(self):

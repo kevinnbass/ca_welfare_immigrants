@@ -2,9 +2,6 @@
 Integration tests for mini end-to-end pipeline with synthetic data.
 """
 
-import tempfile
-from pathlib import Path
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -185,26 +182,30 @@ class TestOutputStructure:
         ]
 
         # Create mock output
-        output = pd.DataFrame({
-            "program": ["medicaid", "medicaid", "snap"],
-            "group": ["US_BORN", "ILLEGAL", "US_BORN"],
-            "estimate": [0.25, 0.15, 0.12],
-            "se": [0.02, 0.03, 0.02],
-            "ci_lower": [0.21, 0.09, 0.08],
-            "ci_upper": [0.29, 0.21, 0.16],
-        })
+        output = pd.DataFrame(
+            {
+                "program": ["medicaid", "medicaid", "snap"],
+                "group": ["US_BORN", "ILLEGAL", "US_BORN"],
+                "estimate": [0.25, 0.15, 0.12],
+                "se": [0.02, 0.03, 0.02],
+                "ci_lower": [0.21, 0.09, 0.08],
+                "ci_upper": [0.29, 0.21, 0.16],
+            }
+        )
 
         for col in expected_columns:
             assert col in output.columns
 
     def test_confidence_interval_validity(self):
         """Test confidence intervals are valid."""
-        output = pd.DataFrame({
-            "estimate": [0.25, 0.15, 0.12],
-            "se": [0.02, 0.03, 0.02],
-            "ci_lower": [0.21, 0.09, 0.08],
-            "ci_upper": [0.29, 0.21, 0.16],
-        })
+        output = pd.DataFrame(
+            {
+                "estimate": [0.25, 0.15, 0.12],
+                "se": [0.02, 0.03, 0.02],
+                "ci_lower": [0.21, 0.09, 0.08],
+                "ci_upper": [0.29, 0.21, 0.16],
+            }
+        )
 
         # CI should contain estimate
         assert (output["ci_lower"] <= output["estimate"]).all()

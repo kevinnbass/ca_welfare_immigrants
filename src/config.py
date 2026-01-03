@@ -23,6 +23,7 @@ class StatusGroup(str, Enum):
     # Special values
     UNKNOWN = "UNKNOWN"
 
+
 # =============================================================================
 # DIRECTORY PATHS
 # =============================================================================
@@ -45,9 +46,16 @@ BOOTSTRAP_MODELS_DIR: Final[Path] = MODELS_DIR / "bootstrap"
 
 # All required directories
 _REQUIRED_DIRS: Final[list[Path]] = [
-    RAW_DATA_DIR, PROCESSED_DATA_DIR, EXTERNAL_DATA_DIR, ADMIN_DATA_DIR,
-    BENCHMARKS_DIR, TABLES_DIR, FIGURES_DIR, POOLED_OUTPUTS_DIR,
-    MODELS_DIR, BOOTSTRAP_MODELS_DIR
+    RAW_DATA_DIR,
+    PROCESSED_DATA_DIR,
+    EXTERNAL_DATA_DIR,
+    ADMIN_DATA_DIR,
+    BENCHMARKS_DIR,
+    TABLES_DIR,
+    FIGURES_DIR,
+    POOLED_OUTPUTS_DIR,
+    MODELS_DIR,
+    BOOTSTRAP_MODELS_DIR,
 ]
 
 
@@ -60,6 +68,7 @@ def ensure_directories() -> None:
     """
     for dir_path in _REQUIRED_DIRS:
         dir_path.mkdir(parents=True, exist_ok=True)
+
 
 # =============================================================================
 # DATA SOURCE URLS
@@ -376,8 +385,7 @@ def validate_year(year: int) -> None:
     """
     if not VALID_YEAR_RANGE[0] <= year <= VALID_YEAR_RANGE[1]:
         raise ValueError(
-            f"Year {year} is outside valid range "
-            f"[{VALID_YEAR_RANGE[0]}, {VALID_YEAR_RANGE[1]}]"
+            f"Year {year} is outside valid range [{VALID_YEAR_RANGE[0]}, {VALID_YEAR_RANGE[1]}]"
         )
 
 

@@ -171,22 +171,26 @@ class CHISLoader:
         for program in self.PROGRAM_VARS.keys():
             for cit_code, cit_label in self.CITIZEN_LABELS.items():
                 rate_info = self.compute_rate_with_se(program, cit_code)
-                results.append({
-                    "source": "CHIS",
-                    "year": 2023,
-                    "program": program,
-                    "group": cit_label,
-                    **rate_info,
-                })
+                results.append(
+                    {
+                        "source": "CHIS",
+                        "year": 2023,
+                        "program": program,
+                        "group": cit_label,
+                        **rate_info,
+                    }
+                )
 
             # Also compute overall rate
             rate_info = self.compute_rate_with_se(program, None)
-            results.append({
-                "source": "CHIS",
-                "year": 2023,
-                "program": program,
-                "group": "ALL",
-                **rate_info,
-            })
+            results.append(
+                {
+                    "source": "CHIS",
+                    "year": 2023,
+                    "program": program,
+                    "group": "ALL",
+                    **rate_info,
+                }
+            )
 
         return pd.DataFrame(results)

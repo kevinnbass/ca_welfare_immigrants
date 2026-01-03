@@ -221,9 +221,7 @@ class UnauthorizedBenchmarkFetcher:
 
         summary = {}
         for source, est in estimates.items():
-            rel_diff = (
-                (est.estimate - pew_value) / pew_value if pew_value > 0 else 0
-            )
+            rel_diff = (est.estimate - pew_value) / pew_value if pew_value > 0 else 0
             summary[source] = {
                 "name": self.SOURCES[source]["name"],
                 "year": est.year,
@@ -269,8 +267,7 @@ class UnauthorizedBenchmarkFetcher:
             nearest_year = min(available_years, key=lambda y: abs(y - year))
             estimate = source_estimates[nearest_year]
             logger.info(
-                f"Using {source} estimate from {nearest_year} "
-                f"(nearest to requested {year})"
+                f"Using {source} estimate from {nearest_year} (nearest to requested {year})"
             )
             return estimate
 
@@ -299,11 +296,7 @@ class UnauthorizedBenchmarkFetcher:
             if trends_path.exists():
                 df = pd.read_excel(trends_path)
                 # Parse California row for target year
-                ca_rows = df[
-                    df.apply(
-                        lambda r: "california" in str(r.values).lower(), axis=1
-                    )
-                ]
+                ca_rows = df[df.apply(lambda r: "california" in str(r.values).lower(), axis=1)]
                 if not ca_rows.empty and str(year) in df.columns:
                     estimate_val = ca_rows[str(year)].iloc[0]
                     if pd.notna(estimate_val):
@@ -370,8 +363,7 @@ def get_calibration_target(
 
     if fallback_to_config:
         logger.warning(
-            f"Using fallback calibration target from config: "
-            f"{config.PEW_CA_UNAUTHORIZED_2023:,}"
+            f"Using fallback calibration target from config: {config.PEW_CA_UNAUTHORIZED_2023:,}"
         )
         return config.PEW_CA_UNAUTHORIZED_2023
 

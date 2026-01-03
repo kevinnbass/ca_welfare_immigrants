@@ -4,8 +4,6 @@ Tests for benchmark data sources (DOF population, unauthorized estimates).
 
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 
 class TestDOFPopulation:
     """Tests for DOF population fetcher."""
@@ -13,6 +11,7 @@ class TestDOFPopulation:
     def test_dof_import(self):
         """Test DOF population module can be imported."""
         from src.benchmarks.dof_population import DOFPopulationFetcher
+
         assert DOFPopulationFetcher is not None
 
     def test_population_estimate_dataclass(self):
@@ -62,6 +61,7 @@ class TestUnauthorizedBenchmarks:
     def test_unauthorized_import(self):
         """Test unauthorized benchmarks module can be imported."""
         from src.benchmarks.unauthorized import UnauthorizedBenchmarkFetcher
+
         assert UnauthorizedBenchmarkFetcher is not None
 
     def test_unauthorized_estimate_dataclass(self):

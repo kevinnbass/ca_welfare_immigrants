@@ -6,8 +6,6 @@ CRITICAL: These tests verify that SNAP rates use the correct weights:
 - Person rates: PWGTP (person weights)
 """
 
-import pytest
-
 
 class TestSNAPEstimandWeights:
     """Tests verifying SNAP uses correct weights based on unit of analysis."""
@@ -50,9 +48,7 @@ class TestSNAPEstimandWeights:
 
         spec = get_estimand_spec("snap_person")
 
-        assert spec.weight_col == "PWGTP", (
-            f"SNAP person should use PWGTP, got {spec.weight_col}"
-        )
+        assert spec.weight_col == "PWGTP", f"SNAP person should use PWGTP, got {spec.weight_col}"
         assert spec.weight_prefix == "PWGTP", (
             f"SNAP person weight prefix should be PWGTP, got {spec.weight_prefix}"
         )
@@ -70,12 +66,8 @@ class TestMedicaidEstimandWeights:
 
         spec = get_estimand_spec("medicaid")
 
-        assert spec.weight_col == "PWGTP", (
-            f"Medicaid should use PWGTP, got {spec.weight_col}"
-        )
-        assert spec.unit == "person", (
-            f"Medicaid estimand unit should be 'person', got {spec.unit}"
-        )
+        assert spec.weight_col == "PWGTP", f"Medicaid should use PWGTP, got {spec.weight_col}"
+        assert spec.unit == "person", f"Medicaid estimand unit should be 'person', got {spec.unit}"
 
 
 class TestSSIEstimandWeights:
@@ -87,12 +79,8 @@ class TestSSIEstimandWeights:
 
         spec = get_estimand_spec("ssi")
 
-        assert spec.weight_col == "PWGTP", (
-            f"SSI should use PWGTP, got {spec.weight_col}"
-        )
-        assert spec.unit == "person", (
-            f"SSI estimand unit should be 'person', got {spec.unit}"
-        )
+        assert spec.weight_col == "PWGTP", f"SSI should use PWGTP, got {spec.weight_col}"
+        assert spec.unit == "person", f"SSI estimand unit should be 'person', got {spec.unit}"
 
 
 class TestEstimandSpecConsistency:
@@ -123,8 +111,11 @@ class TestEstimandSpecConsistency:
         from src.utils.analysis_units import get_estimand_spec
 
         estimands = [
-            "medicaid", "ssi", "snap_person",
-            "snap_household_householder", "snap_household_highest_risk",
+            "medicaid",
+            "ssi",
+            "snap_person",
+            "snap_household_householder",
+            "snap_household_highest_risk",
         ]
 
         for estimand_id in estimands:
@@ -149,9 +140,7 @@ class TestWelfarePrograms:
                 continue
 
             for field in required_fields:
-                assert field in spec, (
-                    f"Program '{program}' missing required field '{field}'"
-                )
+                assert field in spec, f"Program '{program}' missing required field '{field}'"
 
     def test_snap_variants_exist(self):
         """Verify SNAP has household and person variants."""
@@ -164,6 +153,4 @@ class TestWelfarePrograms:
         ]
 
         for variant in expected_variants:
-            assert variant in config.WELFARE_PROGRAMS, (
-                f"Missing SNAP variant: {variant}"
-            )
+            assert variant in config.WELFARE_PROGRAMS, f"Missing SNAP variant: {variant}"

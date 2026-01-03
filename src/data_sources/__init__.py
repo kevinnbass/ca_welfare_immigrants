@@ -16,16 +16,16 @@ Modules:
 from .base import (
     BaseDataSourceDownloader,
     CkanDownloader,
-    PortalDownloader,
     DataSourceMetadata,
-    DownloadResult,
     DownloadOutcome,
+    DownloadResult,
+    PortalDownloader,
 )
 from .calfresh import CalFreshDownloader
 from .calworks import CalWORKsDownloader
 from .medi_cal import MediCalDownloader
-from .ssi import SSIDownloader
 from .registry import AdminDataSourceRegistry
+from .ssi import SSIDownloader
 
 __all__ = [
     # Base classes

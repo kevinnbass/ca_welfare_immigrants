@@ -11,21 +11,23 @@ def sample_acs_df():
     np.random.seed(42)
     n = 100
 
-    return pd.DataFrame({
-        "SERIALNO": [f"2023{i:010d}" for i in range(n)],
-        "SPORDER": np.random.randint(1, 5, n),
-        "PWGTP": np.random.randint(1, 1000, n),
-        "NATIVITY": np.random.choice([1, 2], n, p=[0.73, 0.27]),
-        "CIT": np.random.choice([1, 2, 3, 4, 5], n),
-        "AGEP": np.random.randint(0, 100, n),
-        "SEX": np.random.choice([1, 2], n),
-        "HINS4": np.random.choice([0, 1], n, p=[0.7, 0.3]),
-        "FS": np.random.choice([0, 1], n, p=[0.9, 0.1]),
-        "SSIP": np.random.choice([0, 100, 500], n, p=[0.95, 0.03, 0.02]),
-        "PAP": np.random.choice([0, 200], n, p=[0.98, 0.02]),
-        # Add replicate weights
-        **{f"PWGTP{i}": np.random.randint(1, 1000, n) for i in range(1, 81)}
-    })
+    return pd.DataFrame(
+        {
+            "SERIALNO": [f"2023{i:010d}" for i in range(n)],
+            "SPORDER": np.random.randint(1, 5, n),
+            "PWGTP": np.random.randint(1, 1000, n),
+            "NATIVITY": np.random.choice([1, 2], n, p=[0.73, 0.27]),
+            "CIT": np.random.choice([1, 2, 3, 4, 5], n),
+            "AGEP": np.random.randint(0, 100, n),
+            "SEX": np.random.choice([1, 2], n),
+            "HINS4": np.random.choice([0, 1], n, p=[0.7, 0.3]),
+            "FS": np.random.choice([0, 1], n, p=[0.9, 0.1]),
+            "SSIP": np.random.choice([0, 100, 500], n, p=[0.95, 0.03, 0.02]),
+            "PAP": np.random.choice([0, 200], n, p=[0.98, 0.02]),
+            # Add replicate weights
+            **{f"PWGTP{i}": np.random.randint(1, 1000, n) for i in range(1, 81)},
+        }
+    )
 
 
 @pytest.fixture

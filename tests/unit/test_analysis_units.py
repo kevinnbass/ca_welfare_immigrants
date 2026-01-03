@@ -4,20 +4,18 @@ Tests for analysis_units module.
 Tests household vs person level estimation utilities.
 """
 
-import numpy as np
 import pandas as pd
 import pytest
 
 from src.utils.analysis_units import (
+    STATUS_RISK_ORDER,
     EstimandSpec,
+    classify_household_status,
+    get_all_estimand_specs,
     get_estimand_spec,
     prepare_household_level_data,
     validate_weight_columns,
-    get_all_estimand_specs,
-    classify_household_status,
-    STATUS_RISK_ORDER,
 )
-from src import config
 
 
 class TestEstimandSpec:
@@ -79,18 +77,23 @@ class TestPrepareHouseholdLevelData:
     @pytest.fixture
     def sample_person_df(self):
         """Create sample person-level DataFrame."""
-        return pd.DataFrame({
-            "SERIALNO": [1, 1, 1, 2, 2, 3],
-            "SPORDER": [1, 2, 3, 1, 2, 1],  # 1 = householder
-            "status": [
-                "US_BORN", "ILLEGAL", "US_BORN",
-                "NATURALIZED", "ILLEGAL",
-                "LEGAL_NONCITIZEN"
-            ],
-            "PWGTP": [100, 80, 50, 120, 90, 150],
-            "WGTP": [230, 230, 230, 210, 210, 150],
-            "snap": [1, 1, 1, 0, 0, 1],
-        })
+        return pd.DataFrame(
+            {
+                "SERIALNO": [1, 1, 1, 2, 2, 3],
+                "SPORDER": [1, 2, 3, 1, 2, 1],  # 1 = householder
+                "status": [
+                    "US_BORN",
+                    "ILLEGAL",
+                    "US_BORN",
+                    "NATURALIZED",
+                    "ILLEGAL",
+                    "LEGAL_NONCITIZEN",
+                ],
+                "PWGTP": [100, 80, 50, 120, 90, 150],
+                "WGTP": [230, 230, 230, 210, 210, 150],
+                "snap": [1, 1, 1, 0, 0, 1],
+            }
+        )
 
     def test_householder_rule(self, sample_person_df):
         """Test filtering to householders only."""
@@ -146,10 +149,12 @@ class TestValidateWeightColumns:
     @pytest.fixture
     def sample_df_with_weights(self):
         """Create DataFrame with full replicate weights."""
-        df = pd.DataFrame({
-            "PWGTP": [100],
-            "WGTP": [200],
-        })
+        df = pd.DataFrame(
+            {
+                "PWGTP": [100],
+                "WGTP": [200],
+            }
+        )
         # Add 80 person replicate weights
         for i in range(1, 81):
             df[f"PWGTP{i}"] = 100 + i
@@ -227,15 +232,13 @@ class TestClassifyHouseholdStatus:
     @pytest.fixture
     def sample_person_df(self):
         """Create sample person-level DataFrame."""
-        return pd.DataFrame({
-            "SERIALNO": [1, 1, 2, 2, 3],
-            "SPORDER": [1, 2, 1, 2, 1],
-            "status": [
-                "US_BORN", "ILLEGAL",
-                "NATURALIZED", "LEGAL_NONCITIZEN",
-                "ILLEGAL"
-            ],
-        })
+        return pd.DataFrame(
+            {
+                "SERIALNO": [1, 1, 2, 2, 3],
+                "SPORDER": [1, 2, 1, 2, 1],
+                "status": ["US_BORN", "ILLEGAL", "NATURALIZED", "LEGAL_NONCITIZEN", "ILLEGAL"],
+            }
+        )
 
     def test_both_methods(self, sample_person_df):
         """Test adding both classification columns."""

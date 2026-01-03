@@ -17,7 +17,6 @@ import argparse
 import logging
 import subprocess
 import sys
-from pathlib import Path
 
 from . import config
 
@@ -47,7 +46,7 @@ def run_step(step_name: str, command: list[str], critical: bool = True) -> bool:
     logger.info(f"Command: {' '.join(command)}")
 
     try:
-        result = subprocess.run(
+        subprocess.run(
             command,
             check=True,
             capture_output=False,
@@ -224,7 +223,7 @@ def main():
                 logger.error("")
                 return 1
         else:
-            logger.info(f"Skipping SIPP model training (models exist)")
+            logger.info("Skipping SIPP model training (models exist)")
 
     # Step 4: Impute status in ACS
     if not args.observable_only:
@@ -234,9 +233,13 @@ def main():
             success = run_step(
                 "Impute Status",
                 [
-                    python, "-m", "src.03_impute_status_acs",
-                    "--year", str(args.year),
-                    "--n-imputations", str(args.n_imputations),
+                    python,
+                    "-m",
+                    "src.03_impute_status_acs",
+                    "--year",
+                    str(args.year),
+                    "--n-imputations",
+                    str(args.n_imputations),
                 ],
                 critical=True,
             )

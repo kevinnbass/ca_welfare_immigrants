@@ -5,14 +5,12 @@ import pandas as pd
 import pytest
 
 from src.utils.weights import (
-    weighted_mean,
-    weighted_proportion,
-    weighted_sum,
-    weighted_count,
+    ACSReplicateWeightVariance,
     coefficient_of_variation,
     confidence_interval,
     margin_of_error,
-    ACSReplicateWeightVariance,
+    weighted_mean,
+    weighted_proportion,
 )
 
 
@@ -225,11 +223,13 @@ class TestACSReplicateWeightVariance:
         """Create DataFrame with 80 replicate weights."""
         np.random.seed(42)
         n = 100
-        df = pd.DataFrame({
-            "indicator": np.random.choice([0, 1], n),
-            "value": np.random.normal(100, 20, n),
-            "PWGTP": np.random.randint(1, 1000, n),
-        })
+        df = pd.DataFrame(
+            {
+                "indicator": np.random.choice([0, 1], n),
+                "value": np.random.normal(100, 20, n),
+                "PWGTP": np.random.randint(1, 1000, n),
+            }
+        )
         # Add 80 replicate weights
         for i in range(1, 81):
             df[f"PWGTP{i}"] = np.random.randint(1, 1000, n)
@@ -240,11 +240,13 @@ class TestACSReplicateWeightVariance:
         """Create DataFrame without replicate weights."""
         np.random.seed(42)
         n = 100
-        return pd.DataFrame({
-            "indicator": np.random.choice([0, 1], n),
-            "value": np.random.normal(100, 20, n),
-            "PWGTP": np.random.randint(1, 1000, n),
-        })
+        return pd.DataFrame(
+            {
+                "indicator": np.random.choice([0, 1], n),
+                "value": np.random.normal(100, 20, n),
+                "PWGTP": np.random.randint(1, 1000, n),
+            }
+        )
 
     def test_initialization(self):
         """Test class initialization."""

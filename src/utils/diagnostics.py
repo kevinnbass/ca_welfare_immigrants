@@ -8,12 +8,14 @@ and subgroup-level diagnostics.
 
 import logging
 from pathlib import Path
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 import numpy as np
+
+if TYPE_CHECKING:
+    import matplotlib.pyplot as plt
 import pandas as pd
-from sklearn.calibration import calibration_curve
-from sklearn.metrics import brier_score_loss, roc_auc_score
+from sklearn.metrics import roc_auc_score
 
 logger = logging.getLogger(__name__)
 
@@ -227,9 +229,17 @@ def plot_calibration_curve(
     ax1.set_ylim([0, 1])
 
     # Add metrics annotation
-    metrics_text = f"ECE: {metrics['ece']:.3f}\nMCE: {metrics['mce']:.3f}\nBrier: {metrics['brier']:.3f}"
-    ax1.text(0.05, 0.95, metrics_text, transform=ax1.transAxes, verticalalignment="top",
-             bbox=dict(boxstyle="round", facecolor="wheat", alpha=0.5))
+    metrics_text = (
+        f"ECE: {metrics['ece']:.3f}\nMCE: {metrics['mce']:.3f}\nBrier: {metrics['brier']:.3f}"
+    )
+    ax1.text(
+        0.05,
+        0.95,
+        metrics_text,
+        transform=ax1.transAxes,
+        verticalalignment="top",
+        bbox=dict(boxstyle="round", facecolor="wheat", alpha=0.5),
+    )
 
     # Right plot: histogram of predictions
     ax2.hist(y_prob, bins=n_bins, range=(0, 1), alpha=0.7, edgecolor="black")
@@ -297,8 +307,14 @@ def plot_subgroup_calibration(
         mask = subgroup_labels == subgroup
 
         if mask.sum() < 10:
-            ax.text(0.5, 0.5, f"{subgroup}\n(insufficient data)",
-                    ha="center", va="center", transform=ax.transAxes)
+            ax.text(
+                0.5,
+                0.5,
+                f"{subgroup}\n(insufficient data)",
+                ha="center",
+                va="center",
+                transform=ax.transAxes,
+            )
             ax.set_xlim([0, 1])
             ax.set_ylim([0, 1])
             continue
@@ -358,9 +374,7 @@ def generate_calibration_report(
     results = {"model_name": model_name}
 
     # Overall metrics
-    results["overall_metrics"] = compute_calibration_metrics(
-        y_true, y_prob, sample_weight
-    )
+    results["overall_metrics"] = compute_calibration_metrics(y_true, y_prob, sample_weight)
 
     if output_dir:
         output_dir = Path(output_dir)
@@ -369,7 +383,8 @@ def generate_calibration_report(
         # Save calibration plot
         cal_plot_path = output_dir / f"{model_name}_calibration_curve.png"
         plot_calibration_curve(
-            y_true, y_prob,
+            y_true,
+            y_prob,
             sample_weight=sample_weight,
             title=f"Calibration Curve - {model_name}",
             output_path=cal_plot_path,
@@ -378,9 +393,7 @@ def generate_calibration_report(
 
     # Subgroup analysis
     if subgroup_labels is not None:
-        subgroup_df = compute_subgroup_metrics(
-            y_true, y_prob, subgroup_labels, sample_weight
-        )
+        subgroup_df = compute_subgroup_metrics(y_true, y_prob, subgroup_labels, sample_weight)
         results["subgroup_metrics"] = subgroup_df.to_dict(orient="records")
 
         if output_dir:
@@ -392,7 +405,9 @@ def generate_calibration_report(
             # Save subgroup calibration plot
             subgroup_plot_path = output_dir / f"{model_name}_subgroup_calibration.png"
             plot_subgroup_calibration(
-                y_true, y_prob, subgroup_labels,
+                y_true,
+                y_prob,
+                subgroup_labels,
                 sample_weight=sample_weight,
                 title=f"Calibration by {subgroup_name} - {model_name}",
                 output_path=subgroup_plot_path,

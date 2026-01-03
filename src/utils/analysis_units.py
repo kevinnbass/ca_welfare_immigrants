@@ -82,8 +82,7 @@ def get_estimand_spec(program_key: str) -> EstimandSpec:
 
     if program_key not in config.WELFARE_PROGRAMS:
         raise KeyError(
-            f"Unknown program key: {program_key}. "
-            f"Available: {list(config.WELFARE_PROGRAMS.keys())}"
+            f"Unknown program key: {program_key}. Available: {list(config.WELFARE_PROGRAMS.keys())}"
         )
 
     prog = config.WELFARE_PROGRAMS[program_key]
@@ -93,8 +92,7 @@ def get_estimand_spec(program_key: str) -> EstimandSpec:
         import warnings
 
         warnings.warn(
-            f"Program key '{program_key}' is deprecated. "
-            f"Use the explicit estimand keys instead.",
+            f"Program key '{program_key}' is deprecated. Use the explicit estimand keys instead.",
             DeprecationWarning,
             stacklevel=2,
         )
@@ -144,30 +142,24 @@ def prepare_household_level_data(
     if hh_status_rule == "householder":
         # Filter to householders (SPORDER == 1 is reference person)
         hh_df = df[df[person_num_col] == 1].copy()
-        logger.debug(
-            f"Filtered to {len(hh_df):,} householders from {len(df):,} persons"
-        )
+        logger.debug(f"Filtered to {len(hh_df):,} householders from {len(df):,} persons")
 
     elif hh_status_rule == "highest_risk":
         # Assign risk score and take min (highest risk) per household
         df = df.copy()
-        df["_status_risk"] = (
-            df[status_col].map(STATUS_RISK_ORDER).fillna(len(STATUS_RISK_ORDER))
-        )
+        df["_status_risk"] = df[status_col].map(STATUS_RISK_ORDER).fillna(len(STATUS_RISK_ORDER))
 
         # Get index of highest-risk member per household
         idx = df.groupby(hh_id_col)["_status_risk"].idxmin()
         hh_df = df.loc[idx].copy()
         hh_df = hh_df.drop(columns=["_status_risk"])
         logger.debug(
-            f"Selected highest-risk member for {len(hh_df):,} households "
-            f"from {len(df):,} persons"
+            f"Selected highest-risk member for {len(hh_df):,} households from {len(df):,} persons"
         )
 
     else:
         raise ValueError(
-            f"Unknown hh_status_rule: '{hh_status_rule}'. "
-            f"Expected 'householder' or 'highest_risk'"
+            f"Unknown hh_status_rule: '{hh_status_rule}'. Expected 'householder' or 'highest_risk'"
         )
 
     return hh_df
@@ -254,9 +246,7 @@ def classify_household_status(
 
     if method in ("highest_risk", "both"):
         # Get highest-risk member's status
-        df["_status_risk"] = (
-            df[status_col].map(STATUS_RISK_ORDER).fillna(len(STATUS_RISK_ORDER))
-        )
+        df["_status_risk"] = df[status_col].map(STATUS_RISK_ORDER).fillna(len(STATUS_RISK_ORDER))
         highest_risk = df.groupby(hh_id_col).apply(
             lambda g: g.loc[g["_status_risk"].idxmin(), status_col],
             include_groups=False,

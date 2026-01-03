@@ -29,8 +29,7 @@ logger = logging.getLogger(__name__)
 # These may need updating as the portal structure changes
 CALFRESH_DATASET_ID = "calfresh-data"
 CALFRESH_DFA256_URL = (
-    "https://data.ca.gov/dataset/"
-    "calfresh-dfa-256-monthly-participation-and-benefit-issuance"
+    "https://data.ca.gov/dataset/calfresh-dfa-256-monthly-participation-and-benefit-issuance"
 )
 
 

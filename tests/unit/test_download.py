@@ -1,11 +1,10 @@
 """Tests for download utilities."""
 
 import zipfile
-from pathlib import Path
 
 import pytest
 
-from src.utils.download import extract_zip, download_with_retry
+from src.utils.download import download_with_retry, extract_zip
 
 
 class TestExtractZip:
@@ -71,14 +70,10 @@ class TestDownloadWithRetry:
     def test_successful_download_no_retry(self, mocker, tmp_path):
         """Test successful download on first attempt."""
         mock_download = mocker.patch(
-            "src.utils.download.download_file",
-            return_value=tmp_path / "file.txt"
+            "src.utils.download.download_file", return_value=tmp_path / "file.txt"
         )
 
-        result = download_with_retry(
-            "http://example.com/file.txt",
-            tmp_path / "file.txt"
-        )
+        result = download_with_retry("http://example.com/file.txt", tmp_path / "file.txt")
 
         assert mock_download.call_count == 1
         assert result == tmp_path / "file.txt"
@@ -93,14 +88,12 @@ class TestDownloadWithRetry:
             side_effect=[
                 requests.Timeout("timeout"),
                 requests.Timeout("timeout"),
-                tmp_path / "file.txt"
-            ]
+                tmp_path / "file.txt",
+            ],
         )
 
         result = download_with_retry(
-            "http://example.com/file.txt",
-            tmp_path / "file.txt",
-            max_retries=3
+            "http://example.com/file.txt", tmp_path / "file.txt", max_retries=3
         )
 
         assert mock_download.call_count == 3
@@ -112,12 +105,8 @@ class TestDownloadWithRetry:
 
         mocker.patch(
             "src.utils.download.download_file",
-            side_effect=requests.ConnectionError("connection failed")
+            side_effect=requests.ConnectionError("connection failed"),
         )
 
         with pytest.raises(requests.ConnectionError):
-            download_with_retry(
-                "http://example.com/file.txt",
-                tmp_path / "file.txt",
-                max_retries=3
-            )
+            download_with_retry("http://example.com/file.txt", tmp_path / "file.txt", max_retries=3)

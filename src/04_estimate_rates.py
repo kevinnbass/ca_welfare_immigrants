@@ -17,26 +17,21 @@ import logging
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 
 import numpy as np
 import pandas as pd
 
 from . import config
-from .utils.imputation import combine_mi_results_rubins_rules, MIResult
-from .utils.weights import (
-    ACSReplicateWeightVariance,
-    weighted_proportion,
-    weighted_count,
-    coefficient_of_variation,
-    confidence_interval,
-)
 from .utils.analysis_units import (
     EstimandSpec,
     get_estimand_spec,
     prepare_household_level_data,
-    validate_weight_columns,
-    get_all_estimand_specs,
+)
+from .utils.imputation import MIResult, combine_mi_results_rubins_rules
+from .utils.weights import (
+    coefficient_of_variation,
+    confidence_interval,
+    weighted_proportion,
 )
 
 # Configure logging
@@ -140,9 +135,7 @@ def compute_rate_for_estimand(
         return rate, np.nan, np.nan, n_unweighted, n_weighted
 
     # Compute main estimate
-    rate = weighted_proportion(
-        df_group[indicator_col], df_group[weight_col], validate_binary=False
-    )
+    rate = weighted_proportion(df_group[indicator_col], df_group[weight_col], validate_binary=False)
 
     # Replicate estimates for variance
     rate_reps = []
@@ -247,9 +240,7 @@ def compute_rate_with_replicate_variance(
         )
 
     # Main estimate
-    rate = weighted_proportion(
-        df_group[indicator_col], df_group[weight_col], validate_binary=False
-    )
+    rate = weighted_proportion(df_group[indicator_col], df_group[weight_col], validate_binary=False)
 
     # Replicate estimates
     rate_reps = []
@@ -298,9 +289,7 @@ def compute_rates_single_imputation(
 
     # Validate required columns exist
     config.validate_required_columns(
-        df,
-        [status_col, weight_col],
-        context=f"imputation {imputation_index}"
+        df, [status_col, weight_col], context=f"imputation {imputation_index}"
     )
 
     # Check if calibrated weights exist
@@ -322,18 +311,20 @@ def compute_rates_single_imputation(
                         status_value=status_value,
                     )
 
-                    results.append({
-                        "imputation": imputation_index,
-                        "group": status_value,
-                        "program": program,
-                        "rate": rate,
-                        "variance": variance,
-                        "se": se,
-                        "n_unweighted": n_unweighted,
-                        "n_weighted": n_weighted,
-                        "unit": estimand.unit,
-                        "estimand_id": estimand.estimand_id,
-                    })
+                    results.append(
+                        {
+                            "imputation": imputation_index,
+                            "group": status_value,
+                            "program": program,
+                            "rate": rate,
+                            "variance": variance,
+                            "se": se,
+                            "n_unweighted": n_unweighted,
+                            "n_weighted": n_weighted,
+                            "unit": estimand.unit,
+                            "estimand_id": estimand.estimand_id,
+                        }
+                    )
                     continue
 
                 except Exception as e:
@@ -357,18 +348,20 @@ def compute_rates_single_imputation(
                 weight_col=weight_to_use,
             )
 
-            results.append({
-                "imputation": imputation_index,
-                "group": status_value,
-                "program": program,
-                "rate": rate,
-                "variance": variance,
-                "se": se,
-                "n_unweighted": n_unweighted,
-                "n_weighted": n_weighted,
-                "unit": "person",  # Default for legacy programs
-                "estimand_id": program,
-            })
+            results.append(
+                {
+                    "imputation": imputation_index,
+                    "group": status_value,
+                    "program": program,
+                    "rate": rate,
+                    "variance": variance,
+                    "se": se,
+                    "n_unweighted": n_unweighted,
+                    "n_weighted": n_weighted,
+                    "unit": "person",  # Default for legacy programs
+                    "estimand_id": program,
+                }
+            )
 
     return pd.DataFrame(results)
 
@@ -420,20 +413,22 @@ def combine_imputations(
                 list(variances),
             )
 
-        combined.append({
-            "group": group,
-            "program": program,
-            "estimate": mi_result.estimate,
-            "se": mi_result.se,
-            "ci_lower": mi_result.ci_lower,
-            "ci_upper": mi_result.ci_upper,
-            "within_var": mi_result.within_variance,
-            "between_var": mi_result.between_variance,
-            "total_var": mi_result.total_variance,
-            "fmi": mi_result.fraction_missing_info,
-            "n_unweighted": group_df["n_unweighted"].mean(),
-            "n_weighted": group_df["n_weighted"].mean(),
-        })
+        combined.append(
+            {
+                "group": group,
+                "program": program,
+                "estimate": mi_result.estimate,
+                "se": mi_result.se,
+                "ci_lower": mi_result.ci_lower,
+                "ci_upper": mi_result.ci_upper,
+                "within_var": mi_result.within_variance,
+                "between_var": mi_result.between_variance,
+                "total_var": mi_result.total_variance,
+                "fmi": mi_result.fraction_missing_info,
+                "n_unweighted": group_df["n_unweighted"].mean(),
+                "n_weighted": group_df["n_weighted"].mean(),
+            }
+        )
 
     return pd.DataFrame(combined)
 
@@ -483,20 +478,22 @@ def compute_observable_rates(
                         ci_low, ci_high = np.nan, np.nan
                         cv = np.nan
 
-                    results.append({
-                        "group": status_value,
-                        "program": program,
-                        "estimate": rate,
-                        "se": se,
-                        "ci_lower": ci_low,
-                        "ci_upper": ci_high,
-                        "cv": cv,
-                        "n_unweighted": n_unweighted,
-                        "n_weighted": n_weighted,
-                        "source": "observable",
-                        "unit": estimand.unit,
-                        "estimand_id": estimand.estimand_id,
-                    })
+                    results.append(
+                        {
+                            "group": status_value,
+                            "program": program,
+                            "estimate": rate,
+                            "se": se,
+                            "ci_lower": ci_low,
+                            "ci_upper": ci_high,
+                            "cv": cv,
+                            "n_unweighted": n_unweighted,
+                            "n_weighted": n_weighted,
+                            "source": "observable",
+                            "unit": estimand.unit,
+                            "estimand_id": estimand.estimand_id,
+                        }
+                    )
                     continue
 
                 except Exception as e:
@@ -526,20 +523,22 @@ def compute_observable_rates(
                 ci_low, ci_high = np.nan, np.nan
                 cv = np.nan
 
-            results.append({
-                "group": status_value,
-                "program": program,
-                "estimate": rate,
-                "se": se,
-                "ci_lower": ci_low,
-                "ci_upper": ci_high,
-                "cv": cv,
-                "n_unweighted": n_unweighted,
-                "n_weighted": n_weighted,
-                "source": "observable",
-                "unit": "person",
-                "estimand_id": program,
-            })
+            results.append(
+                {
+                    "group": status_value,
+                    "program": program,
+                    "estimate": rate,
+                    "se": se,
+                    "ci_lower": ci_low,
+                    "ci_upper": ci_high,
+                    "cv": cv,
+                    "n_unweighted": n_unweighted,
+                    "n_weighted": n_weighted,
+                    "source": "observable",
+                    "unit": "person",
+                    "estimand_id": program,
+                }
+            )
 
     return pd.DataFrame(results)
 
@@ -750,11 +749,13 @@ def main():
 
     # Add household-level SNAP estimands if requested
     if args.include_household:
-        programs.extend([
-            "snap_household_householder",
-            "snap_household_highest_risk",
-            "snap_person",  # Explicit person-in-SNAP-household
-        ])
+        programs.extend(
+            [
+                "snap_household_householder",
+                "snap_household_highest_risk",
+                "snap_person",  # Explicit person-in-SNAP-household
+            ]
+        )
         logger.info("Including household-level SNAP estimands (using WGTP weights)")
 
     # Determine which file to load
@@ -784,7 +785,7 @@ def main():
     print_summary_table(observable_results)
 
     # Compute imputed rates if available
-    if not args.observable_only and f"status_agg_0" in df.columns:
+    if not args.observable_only and "status_agg_0" in df.columns:
         logger.info("\nComputing imputed status rates...")
 
         # Collect per-imputation results
@@ -812,7 +813,7 @@ def main():
             print_summary_table(combined_results)
 
     # Save combined output (main results file)
-    if not args.observable_only and f"status_agg_0" in df.columns:
+    if not args.observable_only and "status_agg_0" in df.columns:
         main_results = combined_results
     else:
         main_results = observable_results
@@ -823,12 +824,14 @@ def main():
     pop_results = []
     for group in main_results["group"].unique():
         row = main_results[main_results["group"] == group].iloc[0]
-        pop_results.append({
-            "year": args.year,
-            "group": group,
-            "n_unweighted": row["n_unweighted"],
-            "n_weighted": row["n_weighted"],
-        })
+        pop_results.append(
+            {
+                "year": args.year,
+                "group": group,
+                "n_unweighted": row["n_unweighted"],
+                "n_weighted": row["n_weighted"],
+            }
+        )
 
     pop_df = pd.DataFrame(pop_results)
     pop_path = config.TABLES_DIR / f"ca_population_by_group_{args.year}.csv"

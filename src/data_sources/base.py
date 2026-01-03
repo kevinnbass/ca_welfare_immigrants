@@ -160,8 +160,7 @@ class BaseDataSourceDownloader(ABC):
         content_type = response.headers.get("content-type", "").lower()
         if not any(expected in content_type for expected in expected_types):
             raise ValueError(
-                f"Unexpected content type: {content_type}. "
-                f"Expected one of: {expected_types}"
+                f"Unexpected content type: {content_type}. Expected one of: {expected_types}"
             )
 
     def _compute_sha256(self, file_path: Path) -> str:

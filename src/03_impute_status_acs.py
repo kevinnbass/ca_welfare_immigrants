@@ -25,8 +25,6 @@ import pandas as pd
 
 from . import config
 from .utils.imputation import (
-    MultipleImputationEngine,
-    calibrate_to_total,
     create_bernoulli_imputations,
 )
 
@@ -102,7 +100,9 @@ def load_model(model_path: Path, meta_path: Path) -> tuple:
         with open(meta_path) as f:
             metadata = json.load(f)
     except json.JSONDecodeError as e:
-        raise ValueError(f"Model metadata file is corrupted or invalid JSON: {meta_path}. Error: {e}")
+        raise ValueError(
+            f"Model metadata file is corrupted or invalid JSON: {meta_path}. Error: {e}"
+        )
     except FileNotFoundError:
         raise FileNotFoundError(f"Model metadata file not found: {meta_path}")
 
@@ -262,7 +262,7 @@ def apply_model_to_acs(
     df.loc[noncitizen_mask, "p_unauthorized"] = probs
 
     # Summary statistics
-    logger.info(f"P(unauthorized) among noncitizens:")
+    logger.info("P(unauthorized) among noncitizens:")
     logger.info(f"  Mean: {probs.mean():.3f}")
     logger.info(f"  Median: {np.median(probs):.3f}")
     logger.info(f"  Std: {probs.std():.3f}")

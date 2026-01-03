@@ -15,24 +15,21 @@ Data includes:
 
 import logging
 from pathlib import Path
-from typing import Optional
 
 import pandas as pd
 
 from .base import (
-    PortalDownloader,
     DataSourceMetadata,
     DownloadOutcome,
     DownloadResult,
+    PortalDownloader,
 )
 
 logger = logging.getLogger(__name__)
 
 # SSA SSI data URLs (update annually)
 SSI_BASE_URL = "https://www.ssa.gov/policy/docs/statcomps/ssi_sc/"
-SSI_STATE_COUNTY_URL = (
-    "https://www.ssa.gov/policy/docs/statcomps/ssi_sc/2023/ca.html"
-)
+SSI_STATE_COUNTY_URL = "https://www.ssa.gov/policy/docs/statcomps/ssi_sc/2023/ca.html"
 
 
 class SSIDownloader(PortalDownloader):

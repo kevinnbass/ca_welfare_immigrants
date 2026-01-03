@@ -5,15 +5,15 @@ import pandas as pd
 import pytest
 
 from src.utils.validation import (
+    DataValidator,
     ValidationResult,
-    validate_population_total,
-    validate_category_distribution,
+    check_coefficient_of_variation,
     check_missing_values,
     check_unweighted_sample_size,
-    check_coefficient_of_variation,
-    validate_rate_range,
-    DataValidator,
     compare_to_published_estimates,
+    validate_category_distribution,
+    validate_population_total,
+    validate_rate_range,
 )
 
 
@@ -23,28 +23,22 @@ class TestValidatePopulationTotal:
     def test_valid_population_within_tolerance(self):
         """Test validation passes when population is within tolerance."""
         df = pd.DataFrame({"weight": [100, 200, 300]})
-        result = validate_population_total(
-            df, "weight", expected_total=600, tolerance=0.05
-        )
-        assert result.passed == True
+        result = validate_population_total(df, "weight", expected_total=600, tolerance=0.05)
+        assert result.passed
         assert result.actual == 600
         assert result.expected == 600
 
     def test_population_slightly_below_tolerance(self):
         """Test validation passes when just within tolerance."""
         df = pd.DataFrame({"weight": [100, 200, 280]})  # 580, diff is 3.3%
-        result = validate_population_total(
-            df, "weight", expected_total=600, tolerance=0.05
-        )
-        assert result.passed == True
+        result = validate_population_total(df, "weight", expected_total=600, tolerance=0.05)
+        assert result.passed
 
     def test_population_exceeds_tolerance(self):
         """Test validation fails when population exceeds tolerance."""
         df = pd.DataFrame({"weight": [100, 200, 400]})  # 700, diff is 16.7%
-        result = validate_population_total(
-            df, "weight", expected_total=600, tolerance=0.05
-        )
-        assert result.passed == False
+        result = validate_population_total(df, "weight", expected_total=600, tolerance=0.05)
+        assert not result.passed
         assert "Relative difference" in result.message
 
     def test_zero_expected_total_raises(self):
@@ -54,23 +48,19 @@ class TestValidatePopulationTotal:
         # This will cause a division by zero
         result = validate_population_total(df, "weight", expected_total=0)
         # Result will have infinite rel_diff, so passed will be False
-        assert result.passed == False
+        assert not result.passed
 
     def test_empty_dataframe(self):
         """Test validation with empty dataframe."""
         df = pd.DataFrame({"weight": []})
-        result = validate_population_total(
-            df, "weight", expected_total=1000, tolerance=0.05
-        )
-        assert result.passed == False
+        result = validate_population_total(df, "weight", expected_total=1000, tolerance=0.05)
+        assert not result.passed
         assert result.actual == 0
 
     def test_custom_name(self):
         """Test that custom name is used."""
         df = pd.DataFrame({"weight": [100]})
-        result = validate_population_total(
-            df, "weight", expected_total=100, name="Custom Check"
-        )
+        result = validate_population_total(df, "weight", expected_total=100, name="Custom Check")
         assert result.name == "Custom Check"
 
 
@@ -79,50 +69,35 @@ class TestValidateCategoryDistribution:
 
     def test_distribution_within_tolerance(self):
         """Test validation passes when proportions match."""
-        df = pd.DataFrame({
-            "category": ["A", "A", "A", "B", "B"],
-            "weight": [20, 20, 20, 20, 20]
-        })
+        df = pd.DataFrame({"category": ["A", "A", "A", "B", "B"], "weight": [20, 20, 20, 20, 20]})
         expected = {"A": 0.60, "B": 0.40}
-        result = validate_category_distribution(
-            df, "category", "weight", expected, tolerance=0.05
-        )
+        result = validate_category_distribution(df, "category", "weight", expected, tolerance=0.05)
         assert result.passed is True
 
     def test_distribution_exceeds_tolerance(self):
         """Test validation fails when proportions differ."""
-        df = pd.DataFrame({
-            "category": ["A", "A", "B"],
-            "weight": [30, 30, 40]  # 60% A, 40% B
-        })
-        expected = {"A": 0.80, "B": 0.20}  # 20% diff
-        result = validate_category_distribution(
-            df, "category", "weight", expected, tolerance=0.10
+        df = pd.DataFrame(
+            {
+                "category": ["A", "A", "B"],
+                "weight": [30, 30, 40],  # 60% A, 40% B
+            }
         )
-        assert result.passed == False
+        expected = {"A": 0.80, "B": 0.20}  # 20% diff
+        result = validate_category_distribution(df, "category", "weight", expected, tolerance=0.10)
+        assert not result.passed
 
     def test_missing_category_treated_as_zero(self):
         """Test that missing categories are treated as 0 proportion."""
-        df = pd.DataFrame({
-            "category": ["A", "A"],
-            "weight": [50, 50]
-        })
+        df = pd.DataFrame({"category": ["A", "A"], "weight": [50, 50]})
         expected = {"A": 1.0, "B": 0.0}
-        result = validate_category_distribution(
-            df, "category", "weight", expected, tolerance=0.05
-        )
+        result = validate_category_distribution(df, "category", "weight", expected, tolerance=0.05)
         assert result.passed is True
 
     def test_message_contains_details(self):
         """Test that message contains category details."""
-        df = pd.DataFrame({
-            "category": ["A", "B"],
-            "weight": [50, 50]
-        })
+        df = pd.DataFrame({"category": ["A", "B"], "weight": [50, 50]})
         expected = {"A": 0.5, "B": 0.5}
-        result = validate_category_distribution(
-            df, "category", "weight", expected
-        )
+        result = validate_category_distribution(df, "category", "weight", expected)
         assert "A:" in result.message
         assert "B:" in result.message
 
@@ -132,43 +107,44 @@ class TestCheckMissingValues:
 
     def test_no_missing_values(self):
         """Test passes when no missing values."""
-        df = pd.DataFrame({
-            "col1": [1, 2, 3],
-            "col2": ["a", "b", "c"]
-        })
+        df = pd.DataFrame({"col1": [1, 2, 3], "col2": ["a", "b", "c"]})
         result = check_missing_values(df, ["col1", "col2"], max_missing_pct=0.10)
         assert result.passed is True
         assert "All columns OK" in result.message
 
     def test_missing_values_within_threshold(self):
         """Test passes when missing values within threshold."""
-        df = pd.DataFrame({
-            "col1": [1, None, 3, 4, 5, 6, 7, 8, 9, 10]  # 10% missing
-        })
+        df = pd.DataFrame(
+            {
+                "col1": [1, None, 3, 4, 5, 6, 7, 8, 9, 10]  # 10% missing
+            }
+        )
         result = check_missing_values(df, ["col1"], max_missing_pct=0.10)
-        assert result.passed == True
+        assert result.passed
 
     def test_missing_values_exceed_threshold(self):
         """Test fails when missing values exceed threshold."""
-        df = pd.DataFrame({
-            "col1": [1, None, None, None, 5]  # 60% missing
-        })
+        df = pd.DataFrame(
+            {
+                "col1": [1, None, None, None, 5]  # 60% missing
+            }
+        )
         result = check_missing_values(df, ["col1"], max_missing_pct=0.10)
-        assert result.passed == False
+        assert not result.passed
         assert "col1" in result.message
 
     def test_column_not_found(self):
         """Test fails when column doesn't exist."""
         df = pd.DataFrame({"col1": [1, 2, 3]})
         result = check_missing_values(df, ["col1", "missing_col"], max_missing_pct=0.10)
-        assert result.passed == False
+        assert not result.passed
         assert "COLUMN NOT FOUND" in result.message
 
     def test_all_missing(self):
         """Test handling of all-missing column."""
         df = pd.DataFrame({"col1": [None, None, None]})
         result = check_missing_values(df, ["col1"], max_missing_pct=0.10)
-        assert result.passed == False
+        assert not result.passed
         assert result.actual == 1.0
 
 
@@ -177,35 +153,27 @@ class TestCheckUnweightedSampleSize:
 
     def test_all_groups_above_threshold(self):
         """Test passes when all groups above threshold."""
-        df = pd.DataFrame({
-            "group": ["A"] * 50 + ["B"] * 40
-        })
+        df = pd.DataFrame({"group": ["A"] * 50 + ["B"] * 40})
         results = check_unweighted_sample_size(df, "group", min_n=30)
         assert all(r.passed for r in results.values())
 
     def test_group_below_threshold(self):
         """Test fails when a group is below threshold."""
-        df = pd.DataFrame({
-            "group": ["A"] * 50 + ["B"] * 10
-        })
+        df = pd.DataFrame({"group": ["A"] * 50 + ["B"] * 10})
         results = check_unweighted_sample_size(df, "group", min_n=30)
-        assert results["A"].passed == True
-        assert results["B"].passed == False
+        assert results["A"].passed
+        assert not results["B"].passed
         assert "BELOW THRESHOLD" in results["B"].message
 
     def test_edge_case_at_threshold(self):
         """Test exact threshold value."""
-        df = pd.DataFrame({
-            "group": ["A"] * 30
-        })
+        df = pd.DataFrame({"group": ["A"] * 30})
         results = check_unweighted_sample_size(df, "group", min_n=30)
-        assert results["A"].passed == True
+        assert results["A"].passed
 
     def test_nan_groups_skipped(self):
         """Test that NaN group values are skipped."""
-        df = pd.DataFrame({
-            "group": ["A", "A", None, None]
-        })
+        df = pd.DataFrame({"group": ["A", "A", None, None]})
         results = check_unweighted_sample_size(df, "group", min_n=1)
         assert len(results) == 1
         assert "A" in results
@@ -216,40 +184,30 @@ class TestCheckCoefficientOfVariation:
 
     def test_low_cv_passes(self):
         """Test passes when CV is low."""
-        result = check_coefficient_of_variation(
-            estimate=0.50, se=0.05, max_cv=0.30
-        )
+        result = check_coefficient_of_variation(estimate=0.50, se=0.05, max_cv=0.30)
         assert result.passed is True
         assert result.actual == pytest.approx(0.10)  # 5% / 50%
 
     def test_high_cv_fails(self):
         """Test fails when CV exceeds threshold."""
-        result = check_coefficient_of_variation(
-            estimate=0.10, se=0.05, max_cv=0.30
-        )
+        result = check_coefficient_of_variation(estimate=0.10, se=0.05, max_cv=0.30)
         assert result.passed is False
         assert result.actual == pytest.approx(0.50)  # 50% CV
 
     def test_zero_estimate_returns_inf(self):
         """Test that zero estimate produces infinite CV."""
-        result = check_coefficient_of_variation(
-            estimate=0, se=0.05, max_cv=0.30
-        )
+        result = check_coefficient_of_variation(estimate=0, se=0.05, max_cv=0.30)
         assert result.passed is False
         assert result.actual == np.inf
 
     def test_cv_at_threshold(self):
         """Test exact threshold value passes."""
-        result = check_coefficient_of_variation(
-            estimate=1.0, se=0.30, max_cv=0.30
-        )
+        result = check_coefficient_of_variation(estimate=1.0, se=0.30, max_cv=0.30)
         assert result.passed is True
 
     def test_negative_estimate_uses_absolute_value(self):
         """Test CV calculation handles negative estimates."""
-        result = check_coefficient_of_variation(
-            estimate=-0.50, se=0.05, max_cv=0.30
-        )
+        result = check_coefficient_of_variation(estimate=-0.50, se=0.05, max_cv=0.30)
         assert result.passed is True
         assert result.actual == pytest.approx(0.10)
 
@@ -391,12 +349,7 @@ class TestValidationResultDataclass:
     def test_creation_with_all_fields(self):
         """Test creating result with all fields."""
         result = ValidationResult(
-            name="test",
-            passed=True,
-            expected=0.5,
-            actual=0.48,
-            tolerance=0.05,
-            message="OK"
+            name="test", passed=True, expected=0.5, actual=0.48, tolerance=0.05, message="OK"
         )
         assert result.name == "test"
         assert result.passed is True

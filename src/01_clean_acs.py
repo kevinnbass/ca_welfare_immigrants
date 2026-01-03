@@ -24,7 +24,6 @@ import pandas as pd
 
 from . import config
 from .utils.validation import DataValidator
-from .utils.weights import weighted_count
 
 # Configure logging
 logging.basicConfig(
@@ -232,7 +231,9 @@ def create_observable_status(df: pd.DataFrame) -> pd.DataFrame:
     df["is_us_born"] = (df["observable_status"] == "US_BORN").astype(int)
     df["is_naturalized"] = (df["observable_status"] == "NATURALIZED").astype(int)
     df["is_noncitizen"] = (df["observable_status"] == "NONCITIZEN").astype(int)
-    df["is_foreign_born"] = (df["observable_status"].isin(["NATURALIZED", "NONCITIZEN"])).astype(int)
+    df["is_foreign_born"] = (df["observable_status"].isin(["NATURALIZED", "NONCITIZEN"])).astype(
+        int
+    )
 
     # Log distribution
     status_counts = df["observable_status"].value_counts()
@@ -404,7 +405,7 @@ def merge_household_data(
         raise KeyError("SERIALNO column missing from housing DataFrame")
 
     # Check for duplicate keys that could cause unexpected row multiplication
-    person_dupes = person_df["SERIALNO"].duplicated().sum()
+    _ = person_df["SERIALNO"].duplicated().sum()  # Ignore person dupes
     housing_dupes = hh_subset["SERIALNO"].duplicated().sum()
     if housing_dupes > 0:
         logger.warning(f"Housing data has {housing_dupes} duplicate SERIALNOs after dedup")
@@ -418,8 +419,7 @@ def merge_household_data(
     n_after = len(merged)
     if n_after != n_before:
         logger.warning(
-            f"Merge changed row count: {n_before:,} -> {n_after:,} "
-            f"(diff: {n_after - n_before:+,})"
+            f"Merge changed row count: {n_before:,} -> {n_after:,} (diff: {n_after - n_before:+,})"
         )
 
     # Create SNAP indicator at person level

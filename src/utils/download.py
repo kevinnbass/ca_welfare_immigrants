@@ -56,7 +56,7 @@ def download_with_retry(
         except (requests.HTTPError, requests.Timeout, requests.ConnectionError) as e:
             last_exception = e
             if attempt < max_retries - 1:
-                delay = base_delay * (2 ** attempt)
+                delay = base_delay * (2**attempt)
                 logger.warning(
                     f"Download failed (attempt {attempt + 1}/{max_retries}), "
                     f"retrying in {delay:.1f}s: {e}"
@@ -278,7 +278,9 @@ class ACSPUMSDownloader:
             download_file(url, zip_path, overwrite=overwrite)
 
             # Extract
-            extract_dir = self.raw_data_dir / f"acs_{year}_{survey.lower().replace('-', '')}_{state}"
+            extract_dir = (
+                self.raw_data_dir / f"acs_{year}_{survey.lower().replace('-', '')}_{state}"
+            )
             extracted = extract_zip(zip_path, extract_dir)
 
             # Find CSV file

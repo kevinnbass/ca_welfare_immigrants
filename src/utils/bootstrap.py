@@ -21,7 +21,7 @@ Where:
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, Callable
+from typing import Callable, Optional
 
 import numpy as np
 import pandas as pd
@@ -36,8 +36,8 @@ class BootstrapMIResult:
     estimate: float
     total_variance: float
     survey_variance: float  # Within-imputation SDR variance (average)
-    mi_variance: float      # Between-imputation variance (average across bootstraps)
-    model_variance: float   # Between-bootstrap variance
+    mi_variance: float  # Between-imputation variance (average across bootstraps)
+    model_variance: float  # Between-bootstrap variance
     se_total: float
     ci_lower: float
     ci_upper: float
@@ -47,8 +47,8 @@ class BootstrapMIResult:
 
     # Variance decomposition (fractions)
     fraction_survey: float  # V_survey / V_total
-    fraction_mi: float      # V_mi / V_total
-    fraction_model: float   # V_model / V_total
+    fraction_mi: float  # V_mi / V_total
+    fraction_model: float  # V_model / V_total
 
 
 def bootstrap_sipp_sample(
@@ -133,9 +133,7 @@ def train_bootstrap_models(
                 boot_df = bootstrap_sipp_sample(sipp_df, weight_col, random_state=seed)
                 return train_func(boot_df)
 
-            models = Parallel(n_jobs=n_jobs)(
-                delayed(train_single)(seed) for seed in seeds
-            )
+            models = Parallel(n_jobs=n_jobs)(delayed(train_single)(seed) for seed in seeds)
         except ImportError:
             logger.warning("joblib not available, falling back to sequential")
             return train_bootstrap_models(
@@ -490,9 +488,7 @@ class BootstrapModelTrainer:
         if not self.models:
             raise ValueError("No models trained or loaded. Call train() or load_models() first.")
 
-        return apply_bootstrap_models_to_acs(
-            acs_df, self.models, predict_func, noncitizen_mask
-        )
+        return apply_bootstrap_models_to_acs(acs_df, self.models, predict_func, noncitizen_mask)
 
     def create_imputations(self, probabilities: np.ndarray) -> np.ndarray:
         """
