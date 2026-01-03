@@ -48,63 +48,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
 
-      - name: Debug info
+      - name: Run tests
         run: |
-          python --version
-          pip list
-          python -c "import pytest_mock; print('pytest-mock OK')"
-
-      - name: Test imports
-        run: |
-          python -c "import tests.conftest; print('conftest OK')"
-          python -c "import tests.unit.test_download; print('test_download OK')"
-          python -c "import tests.unit.test_weights; print('test_weights OK')"
-          python -c "import tests.unit.test_imputation; print('test_imputation OK')"
-          python -c "from src import config; print('src.config OK')"
-          python -c "from src.utils import download; print('src.utils.download OK')"
-
-      - name: Run pytest collection
-        run: |
-          pytest tests/ --collect-only 2>&1 | head -50
-
-      - name: Test config
-        run: pytest tests/unit/test_config.py -v --tb=short
-
-      - name: Test weights
-        run: pytest tests/unit/test_weights.py -v --tb=short
-
-      - name: Test imputation
-        run: pytest tests/unit/test_imputation.py -v --tb=short
-
-      - name: Test validation
-        run: pytest tests/unit/test_validation.py -v --tb=short
-
-      - name: Test download
-        run: pytest tests/unit/test_download.py -v --tb=short
-
-      - name: Test benchmarks
-        run: pytest tests/unit/test_benchmarks.py -v --tb=short
-
-      - name: Test bootstrap
-        run: pytest tests/unit/test_bootstrap.py -v --tb=short
-
-      - name: Test diagnostics
-        run: pytest tests/unit/test_diagnostics.py -v --tb=short
-
-      - name: Test analysis_units
-        run: pytest tests/unit/test_analysis_units.py -v --tb=short
-
-      - name: Test data_sources
-        run: pytest tests/unit/test_data_sources.py -v --tb=short
-
-      - name: Test pooled_analysis
-        run: pytest tests/unit/test_pooled_analysis.py -v --tb=short
-
-      - name: Test integration mini_pipeline
-        run: pytest tests/integration/test_mini_pipeline.py -v --tb=short
-
-      - name: Test integration snap_estimands
-        run: pytest tests/integration/test_snap_estimands.py -v --tb=short
+          pytest tests/ -v --tb=short -m "not slow"
 
       - name: Run tests with coverage
         if: matrix.python-version == '3.11'

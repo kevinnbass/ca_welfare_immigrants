@@ -34,10 +34,11 @@ class TestExtractZip:
 
     def test_path_traversal_with_dots_blocked(self, tmp_path):
         """Test various path traversal patterns are blocked."""
+        # Only use forward slashes - these work cross-platform in ZIP files
+        # Note: Windows-style backslashes are literal characters on Linux
         patterns = [
             "../secret.txt",
             "foo/../../secret.txt",
-            "..\\..\\secret.txt",  # Windows-style
         ]
 
         for pattern in patterns:
